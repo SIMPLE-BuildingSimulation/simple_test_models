@@ -10,6 +10,6 @@ edition = "2018"
 geometry3d = {path = "../geometry3d"}
 building_model = { path = "../building_model" }
 simulation_state = { path = "../simulation_state" }
-
+schedule = { path = "../schedule" }
 
 
