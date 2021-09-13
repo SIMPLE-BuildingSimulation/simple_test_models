@@ -1,61 +1,74 @@
+use std::rc::Rc;
 use geometry3d::loop3d::Loop3D;
 use geometry3d::point3d::Point3D;
 use geometry3d::polygon3d::Polygon3D;
-use schedule::constant::ScheduleConstant;
+// use schedule::constant::ScheduleConstant;
 
 use building_model::boundary::Boundary;
 use building_model::building::Building;
 use building_model::fenestration::*;
-use building_model::heating_cooling::HeatingCoolingKind;
-use building_model::material::MaterialProperties;
-use building_model::substance::SubstanceProperties;
+use building_model::space::Space;
+use building_model::heating_cooling::{HeatingCoolingKind, HeaterCooler};
+use building_model::simulation_state::SimulationState;
+use building_model::substance::Substance;
+use building_model::material::Material;
+use building_model::construction::Construction;
+use building_model::surface::Surface;
+use building_model::luminaire::Luminaire;
 
-use simulation_state::simulation_state::SimulationState;
-
-pub struct Options {
+pub struct SingleZoneTestBuildingOptions {
     pub zone_volume: f64,
     pub material_is_massive: Option<bool>, // Explicitly mentioned
     pub surface_area: f64,
     pub window_area: f64,
     pub heating_power: f64,
     pub lighting_power: f64,
+    pub infiltration_rate: f64,
 }
 
-impl Default for Options {
-    fn default() -> Options {
-        Options {
+impl Default for SingleZoneTestBuildingOptions {
+    fn default() -> SingleZoneTestBuildingOptions {
+        SingleZoneTestBuildingOptions {
             zone_volume: -1., // Will be checked... negative numbers panic
             material_is_massive: None,
             surface_area: -1., // Will be checked... negative numbers panic
             window_area: 0.,
             heating_power: 0.,
             lighting_power: 0.,
+            infiltration_rate: 0.,
         }
     }
 }
 
-pub fn add_luminaire(building: &mut Building, state: &mut SimulationState, options: &Options) {
+pub fn add_luminaire(building: &mut Building, state: &mut SimulationState, options: &SingleZoneTestBuildingOptions) {
+    
     let power = options.lighting_power;
     assert!(power > 0.);
-    building.add_luminaire_to_space(state, 0).unwrap();
-    building.set_space_max_lighting_power(0, power).unwrap();
+    let mut luminaire = Luminaire::new("the luminaire".to_string());
+    luminaire.set_max_power(power);
+    luminaire.set_target_space(Rc::clone(&building.spaces[0]));
+    building.add_luminaire(luminaire, state);    
 }
 
-pub fn add_heater(building: &mut Building, state: &mut SimulationState, options: &Options) {
+pub fn add_heater(building: &mut Building, state: &mut SimulationState, options: &SingleZoneTestBuildingOptions) {
     let power = options.heating_power;
     assert!(power > 0.);
-    //space.add_heating_cooling(system);
-    building
-        .add_heating_cooling_to_space(state, 0, HeatingCoolingKind::ElectricHeating)
-        .unwrap();
-    building.set_space_max_heating_power(0, power).unwrap();
+    let mut hvac = HeaterCooler::new(
+        "some hvac".to_string(),
+        HeatingCoolingKind::ElectricHeating
+    );
+    hvac.set_max_heating_power(power);
+    hvac.push_target_space(Rc::clone(&building.spaces[0])).unwrap();
+
+    building.add_hvac(hvac, state);
+    
 }
 
 /// A single space building with a single surface (optionally) one operable window that has the same construction
 /// as the rest of the walls.
 ///
 /// The surface_area includes the window; the window_area is cut down from it.
-pub fn get_single_zone_test_building(state: &mut SimulationState, options: &Options) -> Building {
+pub fn get_single_zone_test_building(state: &mut SimulationState, options: &SingleZoneTestBuildingOptions) -> Building {
     let mut building = Building::new("The Building".to_string());
 
     /*************** */
@@ -65,68 +78,56 @@ pub fn get_single_zone_test_building(state: &mut SimulationState, options: &Opti
     if zone_volume <= 0.0 {
         panic!("A positive zone_volume parameter is required (f64)");
     }
-    let space_index = building.add_space("Some space".to_string());
-    building.set_space_volume(space_index, zone_volume).unwrap();
-    building
-        .set_space_importance(space_index, Box::new(ScheduleConstant::new(1.0)))
-        .unwrap();
+
+    let mut space = Space::new("Some space".to_string());
+    space.set_volume(zone_volume);
+        // .set_importance(Box::new(ScheduleConstant::new(1.0)));
+    building.add_space(space);
+
+    
 
     /******************* */
     /* ADD THE SUBSTANCE */
     /******************* */
-    let (substance_properties, material_thickness) = if options
-        .material_is_massive
-        .expect("material_is_massive option required (bool)")
-    {
+    
+    let substance : Rc<Substance>;
+    let thickness: f64;
+
+    let is_massive = options.material_is_massive.expect("material_is_massive option required (bool)");
+    if is_massive {
         // Massive material
-        (
-            SubstanceProperties {
-                density: 1700.,               // kg/m3... reverse engineered from paper
-                specific_heat_capacity: 800., // J/kg.K
-                thermal_conductivity: 0.816,  // W/m.K
-            },
-            200. / 1000.,
-        ) // 200mm
+        let mut sub = Substance::new("the substance".to_string());
+        sub .set_density(1700.)
+            .set_specific_heat_capacity(800.)
+            .set_thermal_conductivity(0.816);
+        substance = building.add_substance(sub);
+
+        thickness = 200. / 1000.;
     } else {
-        // Lightweight material
-        (
-            SubstanceProperties {
-                thermal_conductivity: 0.0252,  // W/m.K
-                specific_heat_capacity: 2400., // J/kg.K
-                density: 17.5,                 // kg/m3... reverse engineered from paper
-            },
-            20. / 1000.,
-        ) // 20mm
-    };
+        let mut sub = Substance::new("the substance".to_string());
+        sub .set_density(17.5)
+            .set_specific_heat_capacity(2400.)
+            .set_thermal_conductivity(0.0252);
+        substance = building.add_substance(sub);
 
-    let poly_index = building.add_substance("the_substance".to_string());
-    building
-        .set_substance_properties(poly_index, substance_properties)
-        .unwrap();
+        thickness = 20. / 1000.;        
+    }
 
+    
     /****************** */
     /* ADD THE MATERIAL */
     /****************** */
-    let mat_index = building.add_material("The_material".to_string());
-    building
-        .set_material_properties(
-            mat_index,
-            MaterialProperties {
-                thickness: material_thickness,
-            },
-        )
-        .unwrap();
-    building
-        .set_material_substance(mat_index, poly_index)
-        .unwrap();
+    let material = Material::new("the material".to_string(), substance, thickness);
+    let material = building.add_material(material);
+    
 
     /********************** */
     /* ADD THE CONSTRUCTION */
     /********************** */
-    let c_index = building.add_construction("The construction".to_string());
-    building
-        .add_material_to_construction(c_index, mat_index)
-        .unwrap();
+    let mut construction = Construction::new("the construction".to_string());
+    construction.layers.push(material);
+    let construction = building.add_construction(construction);
+    
 
     /****************** */
     /* SURFACE GEOMETRY */
@@ -168,57 +169,40 @@ pub fn get_single_zone_test_building(state: &mut SimulationState, options: &Opti
     /* ACTUAL SURFACES */
     /***************** */
     // Add surface
-    let surface_index = building.add_surface("Surface".to_string());
-    building
-        .set_surface_construction(surface_index, c_index)
-        .unwrap();
-    building.set_surface_polygon(surface_index, p).unwrap();
+    let space_index = 0; // there is only one space
+    let mut surface = Surface::new("Surface".to_string(), p, Rc::clone(&construction));
+    surface.set_front_boundary(Boundary::Space(space_index));
+    building.add_surface(surface);
 
-    building
-        .set_surface_front_boundary(surface_index, Boundary::Space(space_index))
-        .unwrap();
+    
 
     // Add window.
     if let Some(window_polygon) = window_polygon {
-        let window_index = building.add_fenestration(
-            state,
-            "Window One".to_string(),
+        let mut fenestration = Fenestration::new(
+            "window one".to_string(), 
+            window_polygon, 
+            construction, 
             FenestrationPositions::Binary,
-            FenestrationType::Window,
+            FenestrationType::Window
         );
-        building
-            .set_fenestration_construction(window_index, c_index)
-            .unwrap();
-        building
-            .set_fenestration_polygon(window_index, window_polygon)
-            .unwrap();
-        building
-            .set_fenestration_front_boundary(surface_index, Boundary::Space(space_index))
-            .unwrap();
+        
+        fenestration.set_front_boundary(Boundary::Space(space_index));
+        building.add_fenestration(fenestration);
     }
 
-    if let Ok(win) = building.get_fenestration(0){
-        assert!((options.window_area - win.area().unwrap()).abs() < f64::EPSILON);
-    }
-
-    if let Ok(surf) = building.get_surface(surface_index) {
-        // areas add up?
-        assert!( ( options.surface_area - surf.area().unwrap() - options.window_area).abs() < f64::EPSILON );
-        match surf.front_boundary() {
-            Boundary::Space(s) => {
-                assert_eq!(*s, space_index)
-            }
-            _ => assert!(false),
-        }
-    } else {
-        assert!(false);
-    }
-
+    
     /*********************** */
     /* ADD HEATER, IF NEEDED */
     /*********************** */
     if options.heating_power > 0.0 {
         add_heater(&mut building, state, options);
+    }
+
+    /*********************** */
+    /* ADD INFILTRATION, IF NEEDED */
+    /*********************** */
+    if options.infiltration_rate > 0.0 {
+        unimplemented!()
     }
 
     /*********************** */
