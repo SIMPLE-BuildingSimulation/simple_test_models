@@ -4,17 +4,17 @@ use geometry3d::point3d::Point3D;
 use geometry3d::polygon3d::Polygon3D;
 // use schedule::constant::ScheduleConstant;
 
-use building_model::boundary::Boundary;
-use building_model::building::Building;
-use building_model::fenestration::*;
-use building_model::space::Space;
-use building_model::heating_cooling::{HeatingCoolingKind, HeaterCooler};
-use building_model::simulation_state::SimulationState;
-use building_model::substance::Substance;
-use building_model::material::Material;
-use building_model::construction::Construction;
-use building_model::surface::Surface;
-use building_model::luminaire::Luminaire;
+use simple_model::boundary::Boundary;
+use simple_model::model::SimpleModel;
+use simple_model::fenestration::*;
+use simple_model::space::Space;
+// use simple_model::hvac::HVACKind;
+use simple_model::hvac::electric_heater::ElectricHeater;
+use simple_model::substance::Substance;
+use simple_model::material::Material;
+use simple_model::construction::Construction;
+use simple_model::surface::Surface;
+use simple_model::luminaire::Luminaire;
 
 pub struct SingleZoneTestBuildingOptions {
     pub zone_volume: f64,
@@ -40,36 +40,31 @@ impl Default for SingleZoneTestBuildingOptions {
     }
 }
 
-pub fn add_luminaire(building: &mut Building, state: &mut SimulationState, options: &SingleZoneTestBuildingOptions) {
+pub fn add_luminaire(model: &mut SimpleModel, options: &SingleZoneTestBuildingOptions) {
     
     let power = options.lighting_power;
     assert!(power > 0.);
     let mut luminaire = Luminaire::new("the luminaire".to_string());
     luminaire.set_max_power(power);
-    luminaire.set_target_space(Rc::clone(&building.spaces[0]));
-    building.add_luminaire(luminaire, state);    
+    luminaire.set_target_space(Rc::clone(&model.spaces[0]));
+    model.add_luminaire(luminaire);    
 }
 
-pub fn add_heater(building: &mut Building, state: &mut SimulationState, options: &SingleZoneTestBuildingOptions) {
+pub fn add_heater(model: &mut SimpleModel,  options: &SingleZoneTestBuildingOptions) {
     let power = options.heating_power;
     assert!(power > 0.);
-    let mut hvac = HeaterCooler::new(
-        "some hvac".to_string(),
-        HeatingCoolingKind::ElectricHeating
-    );
-    hvac.set_max_heating_power(power);
-    hvac.push_target_space(Rc::clone(&building.spaces[0])).unwrap();
-
-    building.add_hvac(hvac, state);
+    let mut hvac = ElectricHeater::new("some hvac".to_string());
+    hvac.set_target_space(Rc::clone(&model.spaces[0]));    
+    model.add_hvac(Rc::new(hvac));
     
 }
 
-/// A single space building with a single surface (optionally) one operable window that has the same construction
+/// A single space model with a single surface (optionally) one operable window that has the same construction
 /// as the rest of the walls.
 ///
 /// The surface_area includes the window; the window_area is cut down from it.
-pub fn get_single_zone_test_building(state: &mut SimulationState, options: &SingleZoneTestBuildingOptions) -> Building {
-    let mut building = Building::new("The Building".to_string());
+pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -> SimpleModel {
+    let mut model = SimpleModel::new("The SimpleModel".to_string());
 
     /*************** */
     /* ADD THE SPACE */
@@ -82,7 +77,7 @@ pub fn get_single_zone_test_building(state: &mut SimulationState, options: &Sing
     let mut space = Space::new("Some space".to_string());
     space.set_volume(zone_volume);
         // .set_importance(Box::new(ScheduleConstant::new(1.0)));
-    building.add_space(space);
+    let space = model.add_space(space);
 
     
 
@@ -100,7 +95,7 @@ pub fn get_single_zone_test_building(state: &mut SimulationState, options: &Sing
         sub .set_density(1700.)
             .set_specific_heat_capacity(800.)
             .set_thermal_conductivity(0.816);
-        substance = building.add_substance(sub);
+        substance = model.add_substance(sub);
 
         thickness = 200. / 1000.;
     } else {
@@ -108,7 +103,7 @@ pub fn get_single_zone_test_building(state: &mut SimulationState, options: &Sing
         sub .set_density(17.5)
             .set_specific_heat_capacity(2400.)
             .set_thermal_conductivity(0.0252);
-        substance = building.add_substance(sub);
+        substance = model.add_substance(sub);
 
         thickness = 20. / 1000.;        
     }
@@ -118,7 +113,7 @@ pub fn get_single_zone_test_building(state: &mut SimulationState, options: &Sing
     /* ADD THE MATERIAL */
     /****************** */
     let material = Material::new("the material".to_string(), substance, thickness);
-    let material = building.add_material(material);
+    let material = model.add_material(material);
     
 
     /********************** */
@@ -126,7 +121,7 @@ pub fn get_single_zone_test_building(state: &mut SimulationState, options: &Sing
     /********************** */
     let mut construction = Construction::new("the construction".to_string());
     construction.layers.push(material);
-    let construction = building.add_construction(construction);
+    let construction = model.add_construction(construction);
     
 
     /****************** */
@@ -168,11 +163,10 @@ pub fn get_single_zone_test_building(state: &mut SimulationState, options: &Sing
     /***************** */
     /* ACTUAL SURFACES */
     /***************** */
-    // Add surface
-    let space_index = 0; // there is only one space
+    // Add surface    
     let mut surface = Surface::new("Surface".to_string(), p, Rc::clone(&construction));
-    surface.set_front_boundary(Boundary::Space(space_index));
-    building.add_surface(surface);
+    surface.set_front_boundary(Boundary::Space(Rc::clone(&space)));
+    model.add_surface(surface);
 
     
 
@@ -186,8 +180,8 @@ pub fn get_single_zone_test_building(state: &mut SimulationState, options: &Sing
             FenestrationType::Window
         );
         
-        fenestration.set_front_boundary(Boundary::Space(space_index));
-        building.add_fenestration(fenestration);
+        fenestration.set_front_boundary(Boundary::Space(Rc::clone(&space)));
+        model.add_fenestration(fenestration);
     }
 
     
@@ -195,7 +189,7 @@ pub fn get_single_zone_test_building(state: &mut SimulationState, options: &Sing
     /* ADD HEATER, IF NEEDED */
     /*********************** */
     if options.heating_power > 0.0 {
-        add_heater(&mut building, state, options);
+        add_heater(&mut model, options);
     }
 
     /*********************** */
@@ -209,9 +203,9 @@ pub fn get_single_zone_test_building(state: &mut SimulationState, options: &Sing
     /* ADD LIGHTS, IF NEEDED */
     /*********************** */
     if options.lighting_power > 0.0 {
-        add_luminaire(&mut building, state, options);
+        add_luminaire(&mut model,  options);
     }
 
     // Return
-    building
+    model
 }
