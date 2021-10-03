@@ -12,5 +12,7 @@ geometry3d = {git = "https://github.com/SIMPLE-BuildingSimulation/geometry3d.git
 schedule = { git = "https://github.com/SIMPLE-BuildingSimulation/schedule.git" }
 simple_model = { git = "https://github.com/SIMPLE-BuildingSimulation/simple_model.git" }
 
-
+[features]
+default = []
+float = ["simple_model/float", "geometry3d/float"]
 

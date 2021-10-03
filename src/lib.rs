@@ -18,6 +18,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+
+/// The kind of Floating point number used in the
+/// library... the `"float"` feature means it becomes `f32`
+/// and `f64` is used otherwise.
+#[cfg(feature = "float")]
+type Float = f32;
+
+#[cfg(not(feature = "float"))]
+type Float = f64;
+
+
 use std::rc::Rc;
 use geometry3d::loop3d::Loop3D;
 use geometry3d::point3d::Point3D;
@@ -38,13 +49,13 @@ use simple_model::luminaire::Luminaire;
 use simple_model::infiltration::Infiltration;
 
 pub struct SingleZoneTestBuildingOptions {
-    pub zone_volume: f64,
+    pub zone_volume: Float,
     pub material_is_massive: Option<bool>, // Explicitly mentioned
-    pub surface_area: f64,
-    pub window_area: f64,
-    pub heating_power: f64,
-    pub lighting_power: f64,
-    pub infiltration_rate: f64,
+    pub surface_area: Float,
+    pub window_area: Float,
+    pub heating_power: Float,
+    pub lighting_power: Float,
+    pub infiltration_rate: Float,
 }
 
 impl Default for SingleZoneTestBuildingOptions {
@@ -94,7 +105,7 @@ pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -
     /*************** */
     let zone_volume = options.zone_volume;
     if zone_volume <= 0.0 {
-        panic!("A positive zone_volume parameter is required (f64)");
+        panic!("A positive zone_volume parameter is required (Float)");
     }
 
     let mut space = Space::new("Some space".to_string());
@@ -120,7 +131,7 @@ pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -
     /******************* */
     
     let substance : Rc<Substance>;
-    let thickness: f64;
+    let thickness: Float;
 
     let is_massive = options.material_is_massive.expect("material_is_massive option required (bool)");
     if is_massive {
@@ -164,7 +175,7 @@ pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -
     // Wall
     let surface_area = options.surface_area;
     if surface_area <= 0.0 {
-        panic!("A positive surface_area option is needed (f64)");
+        panic!("A positive surface_area option is needed (Float)");
     }
 
     let l = (surface_area / 4.).sqrt();
