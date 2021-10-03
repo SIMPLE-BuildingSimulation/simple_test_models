@@ -1,3 +1,23 @@
+/*
+MIT License
+Copyright (c) 2021 Germán Molina
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 use std::rc::Rc;
 use geometry3d::loop3d::Loop3D;
 use geometry3d::point3d::Point3D;
@@ -15,6 +35,7 @@ use simple_model::material::Material;
 use simple_model::construction::Construction;
 use simple_model::surface::Surface;
 use simple_model::luminaire::Luminaire;
+use simple_model::infiltration::Infiltration;
 
 pub struct SingleZoneTestBuildingOptions {
     pub zone_volume: f64,
@@ -50,6 +71,8 @@ pub fn add_luminaire(model: &mut SimpleModel, options: &SingleZoneTestBuildingOp
     model.add_luminaire(luminaire);    
 }
 
+
+
 pub fn add_heater(model: &mut SimpleModel,  options: &SingleZoneTestBuildingOptions) {
     let power = options.heating_power;
     assert!(power > 0.);
@@ -76,7 +99,18 @@ pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -
 
     let mut space = Space::new("Some space".to_string());
     space.set_volume(zone_volume);
-        // .set_importance(Box::new(ScheduleConstant::new(1.0)));
+
+    /*********************** */
+    /* ADD INFILTRATION, IF NEEDED */
+    /*********************** */
+    if options.infiltration_rate > 0.0 {
+        let infiltration_rate = options.infiltration_rate;
+        assert!(infiltration_rate > 0.);
+        let infiltration = Infiltration::Constant(infiltration_rate);    
+        space.set_infiltration(infiltration);    
+    }
+
+    // .set_importance(Box::new(ScheduleConstant::new(1.0)));
     let space = model.add_space(space);
 
     
@@ -192,12 +226,7 @@ pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -
         add_heater(&mut model, options);
     }
 
-    /*********************** */
-    /* ADD INFILTRATION, IF NEEDED */
-    /*********************** */
-    if options.infiltration_rate > 0.0 {
-        unimplemented!()
-    }
+    
 
     /*********************** */
     /* ADD LIGHTS, IF NEEDED */
