@@ -30,23 +30,28 @@ type Float = f64;
 
 
 use std::rc::Rc;
-use geometry3d::loop3d::Loop3D;
-use geometry3d::point3d::Point3D;
-use geometry3d::polygon3d::Polygon3D;
-// use schedule::constant::ScheduleConstant;
+use geometry3d::{
+    Loop3D,
+    Point3D,
+    Polygon3D
+};
 
-use simple_model::boundary::Boundary;
-use simple_model::model::SimpleModel;
-use simple_model::fenestration::*;
-use simple_model::space::Space;
-// use simple_model::hvac::HVACKind;
-use simple_model::hvac::electric_heater::ElectricHeater;
-use simple_model::substance::Substance;
-use simple_model::material::Material;
-use simple_model::construction::Construction;
-use simple_model::surface::Surface;
-use simple_model::luminaire::Luminaire;
-use simple_model::infiltration::Infiltration;
+use simple_model::{
+    Boundary,
+    SimpleModel,
+    Fenestration, FenestrationPositions, FenestrationType,
+    Space,
+    hvac::ElectricHeater,
+    Substance,
+    Material,
+    Construction,
+    Surface,
+    Luminaire,
+    Infiltration, 
+    SimulationStateHeader
+};
+
+
 
 pub struct SingleZoneTestBuildingOptions {
     pub zone_volume: Float,
@@ -72,24 +77,24 @@ impl Default for SingleZoneTestBuildingOptions {
     }
 }
 
-pub fn add_luminaire(model: &mut SimpleModel, options: &SingleZoneTestBuildingOptions) {
+pub fn add_luminaire(model: &mut SimpleModel, options: &SingleZoneTestBuildingOptions, header: &mut SimulationStateHeader) {
     
     let power = options.lighting_power;
     assert!(power > 0.);
     let mut luminaire = Luminaire::new("the luminaire".to_string());
     luminaire.set_max_power(power);
     luminaire.set_target_space(Rc::clone(&model.spaces[0]));
-    model.add_luminaire(luminaire);    
+    model.add_luminaire(luminaire, header);    
 }
 
 
 
-pub fn add_heater(model: &mut SimpleModel,  options: &SingleZoneTestBuildingOptions) {
+pub fn add_heater(model: &mut SimpleModel,  options: &SingleZoneTestBuildingOptions, header: &mut SimulationStateHeader) {
     let power = options.heating_power;
     assert!(power > 0.);
     let mut hvac = ElectricHeater::new("some hvac".to_string());
     hvac.set_target_space(Rc::clone(&model.spaces[0]));    
-    model.add_hvac(Rc::new(hvac));
+    model.add_hvac(hvac.wrap(), header);
     
 }
 
@@ -97,8 +102,10 @@ pub fn add_heater(model: &mut SimpleModel,  options: &SingleZoneTestBuildingOpti
 /// as the rest of the walls.
 ///
 /// The surface_area includes the window; the window_area is cut down from it.
-pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -> SimpleModel {
+pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -> (SimpleModel, SimulationStateHeader) {
+    
     let mut model = SimpleModel::new("The SimpleModel".to_string());
+    let mut header = SimulationStateHeader::new();
 
     /*************** */
     /* ADD THE SPACE */
@@ -165,7 +172,7 @@ pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -
     /* ADD THE CONSTRUCTION */
     /********************** */
     let mut construction = Construction::new("the construction".to_string());
-    construction.layers.push(material);
+    construction.materials.push(material);
     let construction = model.add_construction(construction);
     
 
@@ -226,7 +233,7 @@ pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -
         );
         
         fenestration.set_front_boundary(Boundary::Space(Rc::clone(&space)));
-        model.add_fenestration(fenestration);
+        model.add_fenestration(fenestration, &mut header);
     }
 
     
@@ -234,7 +241,7 @@ pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -
     /* ADD HEATER, IF NEEDED */
     /*********************** */
     if options.heating_power > 0.0 {
-        add_heater(&mut model, options);
+        add_heater(&mut model, options, &mut header);
     }
 
     
@@ -243,9 +250,9 @@ pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -
     /* ADD LIGHTS, IF NEEDED */
     /*********************** */
     if options.lighting_power > 0.0 {
-        add_luminaire(&mut model,  options);
+        add_luminaire(&mut model,  options, &mut header);
     }
 
     // Return
-    model
+    (model, header)
 }
