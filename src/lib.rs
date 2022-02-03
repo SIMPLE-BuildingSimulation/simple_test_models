@@ -42,7 +42,8 @@ use simple_model::{
     Fenestration, FenestrationPositions, FenestrationType,
     Space,
     hvac::ElectricHeater,
-    Substance,
+    substance::Normal as NormalSubstance,
+    Substance,    
     Material,
     Construction,
     Surface,
@@ -137,25 +138,25 @@ pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -
     /* ADD THE SUBSTANCE */
     /******************* */
     
-    let substance : Rc<Substance>;
+    let substance : Substance;
     let thickness: Float;
 
     let is_massive = options.material_is_massive.expect("material_is_massive option required (bool)");
     if is_massive {
         // Massive material
-        let mut sub = Substance::new("the substance".to_string());
+        let mut sub = NormalSubstance::new("the substance".to_string());
         sub .set_density(1700.)
             .set_specific_heat_capacity(800.)
             .set_thermal_conductivity(0.816);
-        substance = model.add_substance(sub);
+        substance = model.add_substance(sub.wrap());
 
         thickness = 200. / 1000.;
     } else {
-        let mut sub = Substance::new("the substance".to_string());
+        let mut sub = NormalSubstance::new("the substance".to_string());
         sub .set_density(17.5)
             .set_specific_heat_capacity(2400.)
             .set_thermal_conductivity(0.0252);
-        substance = model.add_substance(sub);
+        substance = model.add_substance(sub.wrap());
 
         thickness = 20. / 1000.;        
     }
