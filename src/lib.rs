@@ -188,10 +188,10 @@ pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -
 
     let l = (surface_area / 4.).sqrt();
     let mut the_loop = Loop3D::new();
-    the_loop.push(Point3D::new(-l, -l, 0.)).unwrap();
-    the_loop.push(Point3D::new(l, -l, 0.)).unwrap();
-    the_loop.push(Point3D::new(l, l, 0.)).unwrap();
-    the_loop.push(Point3D::new(-l, l, 0.)).unwrap();
+    the_loop.push(Point3D::new(-l, 0., -l)).unwrap();
+    the_loop.push(Point3D::new(l,  0., -l)).unwrap();
+    the_loop.push(Point3D::new(l, 0., l)).unwrap();
+    the_loop.push(Point3D::new(-l, 0., l)).unwrap();
     the_loop.close().unwrap();
 
     let mut p = Polygon3D::new(the_loop).unwrap();
@@ -204,10 +204,10 @@ pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -
         }
         let l = (options.window_area / 4.).sqrt();
         let mut the_inner_loop = Loop3D::new();
-        the_inner_loop.push(Point3D::new(-l, -l, 0.)).unwrap();
-        the_inner_loop.push(Point3D::new(l, -l, 0.)).unwrap();
-        the_inner_loop.push(Point3D::new(l, l, 0.)).unwrap();
-        the_inner_loop.push(Point3D::new(-l, l, 0.)).unwrap();
+        the_inner_loop.push(Point3D::new(-l, 0., -l)).unwrap();
+        the_inner_loop.push(Point3D::new(l, 0., -l)).unwrap();
+        the_inner_loop.push(Point3D::new(l, 0., l)).unwrap();
+        the_inner_loop.push(Point3D::new(-l, 0., l)).unwrap();
         the_inner_loop.close().unwrap();
         p.cut_hole(the_inner_loop.clone()).unwrap();
         window_polygon = Some(Polygon3D::new(the_inner_loop).unwrap());
