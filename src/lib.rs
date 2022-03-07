@@ -188,10 +188,10 @@ pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -
 
     let l = (surface_area / 4.).sqrt();
     let mut the_loop = Loop3D::new();
-    the_loop.push(Point3D::new(-l, 0., -l)).unwrap();
-    the_loop.push(Point3D::new(l,  0., -l)).unwrap();
-    the_loop.push(Point3D::new(l, 0., l)).unwrap();
-    the_loop.push(Point3D::new(-l, 0., l)).unwrap();
+    the_loop.push(Point3D::new(-l, 0., 0.)).unwrap();
+    the_loop.push(Point3D::new(l,  0., 0.)).unwrap();
+    the_loop.push(Point3D::new(l, 0., l*2.)).unwrap();
+    the_loop.push(Point3D::new(-l, 0., l*2.)).unwrap();
     the_loop.close().unwrap();
 
     let mut p = Polygon3D::new(the_loop).unwrap();
