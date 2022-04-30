@@ -17,15 +17,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1    
     - name: Set Toolchain
-      run: rustup default nightly
-    - name: Install MDBook
-      run: cargo install mdbook
-    - name: Install MDBook Katex
-      run: cargo install mdbook-katex
+      run: rustup default nightly    
     - name: Run tests # This creates the IO docs
-      run: cargo test --verbose     
-    - name: Build Book
-      run: mdbook build ./docs/ioreference
+      run: cargo test --verbose         
     - name: Build doc
       run: RUSTDOCFLAGS="--html-in-header katex.html" cargo doc --document-private-items --no-deps --target-dir ./docs/rustdoc
     - name: Deploy
