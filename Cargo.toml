@@ -11,7 +11,7 @@ edition = "2018"
 geometry3d = {git = "https://github.com/SIMPLE-BuildingSimulation/geometry3d.git"}
 schedule = { git = "https://github.com/SIMPLE-BuildingSimulation/schedule.git" }
 simple_model = { git = "https://github.com/SIMPLE-BuildingSimulation/simple_model.git" }
-# simple_model = { path = "../simple_model" }
+
 
 [features]
 default = []

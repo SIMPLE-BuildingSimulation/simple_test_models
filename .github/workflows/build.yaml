@@ -1,0 +1,27 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:  
+  build:
+    runs-on: ubuntu-latest    
+    steps:
+    - uses: actions/checkout@v1 
+    - name: Set Toolchain
+      run: rustup default nightly     
+    - name: Build
+      run: cargo build --verbose
+  build_float:    
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set Toolchain
+      run: rustup default nightly      
+    - name: Build Float
+      run: cargo build --verbose --features float 

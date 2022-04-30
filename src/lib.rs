@@ -100,7 +100,7 @@ pub fn add_heater(model: &mut SimpleModel,  options: &SingleZoneTestBuildingOpti
 }
 
 /// A single space model with a single surface (optionally) one operable window that has the same construction
-/// as the rest of the walls.
+/// as the rest of the walls. Thw front of the surface faces South.
 ///
 /// The surface_area includes the window; the window_area is cut down from it.
 pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -> (SimpleModel, SimulationStateHeader) {
@@ -204,10 +204,10 @@ pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -
         }
         let l = (options.window_area / 4.).sqrt();
         let mut the_inner_loop = Loop3D::new();
-        the_inner_loop.push(Point3D::new(-l, 0., -l)).unwrap();
-        the_inner_loop.push(Point3D::new(l, 0., -l)).unwrap();
-        the_inner_loop.push(Point3D::new(l, 0., l)).unwrap();
-        the_inner_loop.push(Point3D::new(-l, 0., l)).unwrap();
+        the_inner_loop.push(Point3D::new(-l, 0., l/2.)).unwrap();
+        the_inner_loop.push(Point3D::new(l, 0., l/2.)).unwrap();
+        the_inner_loop.push(Point3D::new(l, 0., 3.*l/2.)).unwrap();
+        the_inner_loop.push(Point3D::new(-l, 0., 3.*l/2.)).unwrap();
         the_inner_loop.close().unwrap();
         p.cut_hole(the_inner_loop.clone()).unwrap();
         window_polygon = Some(Polygon3D::new(the_inner_loop).unwrap());
@@ -256,4 +256,29 @@ pub fn get_single_zone_test_building( options: &SingleZoneTestBuildingOptions) -
 
     // Return
     (model, header)
+}
+
+#[cfg(test)]
+mod testing{
+
+    use super::*;
+
+    #[test]
+    fn test_with_window(){
+        let surface_area = 4.;
+        let window_area = 1.;
+        let zone_volume = 40.;
+
+        let (_simple_model, _state_header) = get_single_zone_test_building(
+            // &mut state,
+            &SingleZoneTestBuildingOptions {
+                zone_volume,
+                surface_area,
+                window_area,
+                material_is_massive: Some(false),
+                ..Default::default()
+            },
+        );
+
+    }
 }
