@@ -1,0 +1,2 @@
+    Checking simple_test_models v0.1.0 (/Users/germolinal/Documents/simple/simple_test_models)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.46s
