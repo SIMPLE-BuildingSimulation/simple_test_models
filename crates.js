@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["simple_test_models"];

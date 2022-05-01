@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["simple_test_models"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/panic/unwind_safe/trait.UnwindSafe.html\" title=\"trait core::panic::unwind_safe::UnwindSafe\">UnwindSafe</a> for <a class=\"struct\" href=\"simple_test_models/struct.SingleZoneTestBuildingOptions.html\" title=\"struct simple_test_models::SingleZoneTestBuildingOptions\">SingleZoneTestBuildingOptions</a>","synthetic":true,"types":["simple_test_models::SingleZoneTestBuildingOptions"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["add_heater",""],["add_luminaire",""],["get_single_zone_test_building","A single space model with a single surface (optionally) one operable window that has the same construction as the rest of the walls. Thw front of the surface faces South."]],"struct":[["SingleZoneTestBuildingOptions",""]],"type":[["Float",""]]});
