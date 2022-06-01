@@ -44,6 +44,7 @@ pub struct SingleZoneTestBuildingOptions {
     pub heating_power: Float,
     pub lighting_power: Float,
     pub infiltration_rate: Float,
+    pub emmisivity: Float,
 }
 
 impl Default for SingleZoneTestBuildingOptions {
@@ -56,6 +57,7 @@ impl Default for SingleZoneTestBuildingOptions {
             heating_power: 0.,
             lighting_power: 0.,
             infiltration_rate: 0.,
+            emmisivity: 0.84,
         }
     }
 }
@@ -134,7 +136,8 @@ pub fn get_single_zone_test_building(
         let mut sub = NormalSubstance::new("the substance".to_string());
         sub.set_density(1700.)
             .set_specific_heat_capacity(800.)
-            .set_thermal_conductivity(0.816);
+            .set_thermal_conductivity(0.816)
+            .set_thermal_absorbtance(options.emmisivity);
         substance = model.add_substance(sub.wrap());
 
         thickness = 200. / 1000.;
@@ -142,7 +145,8 @@ pub fn get_single_zone_test_building(
         let mut sub = NormalSubstance::new("the substance".to_string());
         sub.set_density(17.5)
             .set_specific_heat_capacity(2400.)
-            .set_thermal_conductivity(0.0252);
+            .set_thermal_conductivity(0.0252)
+            .set_thermal_absorbtance(options.emmisivity);
         substance = model.add_substance(sub.wrap());
 
         thickness = 20. / 1000.;
