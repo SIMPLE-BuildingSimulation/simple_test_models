@@ -37,7 +37,9 @@
         </a><h2 class="location"></h2>
     </nav>
     <nav class="sidebar"><a class="sidebar-logo" href="../../simple_test_models/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../simple_test_models/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../simple_test_models/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
+                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
+                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -303,6 +305,10 @@
 <span id="264">264</span>
 <span id="265">265</span>
 <span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -349,6 +355,7 @@ SOFTWARE.
     <span class="kw">pub</span> <span class="ident">heating_power</span>: <span class="ident">Float</span>,
     <span class="kw">pub</span> <span class="ident">lighting_power</span>: <span class="ident">Float</span>,
     <span class="kw">pub</span> <span class="ident">infiltration_rate</span>: <span class="ident">Float</span>,
+    <span class="kw">pub</span> <span class="ident">emmisivity</span>: <span class="ident">Float</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">SingleZoneTestBuildingOptions</span> {
@@ -361,6 +368,7 @@ SOFTWARE.
             <span class="ident">heating_power</span>: <span class="number">0.</span>,
             <span class="ident">lighting_power</span>: <span class="number">0.</span>,
             <span class="ident">infiltration_rate</span>: <span class="number">0.</span>,
+            <span class="ident">emmisivity</span>: <span class="number">0.84</span>,
         }
     }
 }
@@ -439,7 +447,8 @@ SOFTWARE.
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sub</span> <span class="op">=</span> <span class="ident">NormalSubstance::new</span>(<span class="string">&quot;the substance&quot;</span>.<span class="ident">to_string</span>());
         <span class="ident">sub</span>.<span class="ident">set_density</span>(<span class="number">1700.</span>)
             .<span class="ident">set_specific_heat_capacity</span>(<span class="number">800.</span>)
-            .<span class="ident">set_thermal_conductivity</span>(<span class="number">0.816</span>);
+            .<span class="ident">set_thermal_conductivity</span>(<span class="number">0.816</span>)
+            .<span class="ident">set_thermal_absorbtance</span>(<span class="ident">options</span>.<span class="ident">emmisivity</span>);
         <span class="ident">substance</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">sub</span>.<span class="ident">wrap</span>());
 
         <span class="ident">thickness</span> <span class="op">=</span> <span class="number">200.</span> <span class="op">/</span> <span class="number">1000.</span>;
@@ -447,7 +456,8 @@ SOFTWARE.
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sub</span> <span class="op">=</span> <span class="ident">NormalSubstance::new</span>(<span class="string">&quot;the substance&quot;</span>.<span class="ident">to_string</span>());
         <span class="ident">sub</span>.<span class="ident">set_density</span>(<span class="number">17.5</span>)
             .<span class="ident">set_specific_heat_capacity</span>(<span class="number">2400.</span>)
-            .<span class="ident">set_thermal_conductivity</span>(<span class="number">0.0252</span>);
+            .<span class="ident">set_thermal_conductivity</span>(<span class="number">0.0252</span>)
+            .<span class="ident">set_thermal_absorbtance</span>(<span class="ident">options</span>.<span class="ident">emmisivity</span>);
         <span class="ident">substance</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">sub</span>.<span class="ident">wrap</span>());
 
         <span class="ident">thickness</span> <span class="op">=</span> <span class="number">20.</span> <span class="op">/</span> <span class="number">1000.</span>;
@@ -570,5 +580,5 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="simple_test_models" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (7c4b47696 2022-04-30)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="simple_test_models" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (e09449220 2022-05-31)" ></div>
 </body></html>
