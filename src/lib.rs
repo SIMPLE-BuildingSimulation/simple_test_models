@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+
 /// The kind of Floating point number used in the
 /// library... the `"float"` feature means it becomes `f32`
 /// and `f64` is used otherwise.
@@ -36,9 +37,30 @@ use simple_model::{
     SimpleModel, SimulationStateHeader, Space, Substance, Surface,
 };
 
+/// The test material
+pub enum TestMat {
+    /// A Concrete with a certain `Float` thickness   
+    /// 
+    /// # Properties
+    /// * density: 1700.
+    /// * Specific heat: 800.
+    /// * Thermal Cond.: 0.816
+    /// * Emmisivity: From `options.emmisivity`
+    Concrete(Float), 
+
+    /// A Polyurethane with a certain `Float` thickness
+    /// 
+    /// # Properties
+    /// * density: 17.5
+    /// * Specific heat: 2400.
+    /// * Thermal Cond.: 0.0252
+    /// * Emmisivity: From `options.emmisivity
+    Polyurethane(Float)
+}
+
 pub struct SingleZoneTestBuildingOptions {
     pub zone_volume: Float,
-    pub material_is_massive: Option<bool>, // Explicitly mentioned
+    pub construction: Vec<TestMat>, // Explicitly mentioned
     pub surface_area: Float,
     pub window_area: Float,
     pub heating_power: Float,
@@ -51,7 +73,7 @@ impl Default for SingleZoneTestBuildingOptions {
     fn default() -> SingleZoneTestBuildingOptions {
         SingleZoneTestBuildingOptions {
             zone_volume: -1., // Will be checked... negative numbers panic
-            material_is_massive: None,
+            construction: Vec::with_capacity(0),
             surface_area: -1., // Will be checked... negative numbers panic
             window_area: 0.,
             heating_power: 0.,
@@ -125,46 +147,40 @@ pub fn get_single_zone_test_building(
     /* ADD THE SUBSTANCE */
     /******************* */
 
-    let substance: Substance;
-    let thickness: Float;
-
-    let is_massive = options
-        .material_is_massive
-        .expect("material_is_massive option required (bool)");
-    if is_massive {
-        // Massive material
-        let mut sub = NormalSubstance::new("the substance".to_string());
-        sub.set_density(1700.)
+    // Add both substances
+    let mut concrete = NormalSubstance::new("concrete".to_string());
+    concrete.set_density(1700.)
             .set_specific_heat_capacity(800.)
             .set_thermal_conductivity(0.816)
             .set_thermal_absorbtance(options.emmisivity);
-        substance = model.add_substance(sub.wrap());
+    let concrete = model.add_substance(concrete.wrap());
 
-        thickness = 200. / 1000.;
-    } else {
-        let mut sub = NormalSubstance::new("the substance".to_string());
-        sub.set_density(17.5)
-            .set_specific_heat_capacity(2400.)
-            .set_thermal_conductivity(0.0252)
-            .set_thermal_absorbtance(options.emmisivity);
-        substance = model.add_substance(sub.wrap());
+    let mut polyurethane = NormalSubstance::new("polyurethane".to_string());
+    polyurethane.set_density(17.5)
+        .set_specific_heat_capacity(2400.)
+        .set_thermal_conductivity(0.0252)
+        .set_thermal_absorbtance(options.emmisivity);
+    let polyurethane = model.add_substance(polyurethane.wrap());
 
-        thickness = 20. / 1000.;
-    }
 
-    /****************** */
-    /* ADD THE MATERIAL */
-    /****************** */
-    let material = Material::new("the material".to_string(), substance, thickness);
-    let material = model.add_material(material);
-
-    /********************** */
-    /* ADD THE CONSTRUCTION */
-    /********************** */
+    /*********************************** */
+    /* ADD THE MATERIAL AND CONSTRUCTION */
+    /*********************************** */
     let mut construction = Construction::new("the construction".to_string());
-    construction.materials.push(material);
+    for (i,c) in options.construction.iter().enumerate(){
+        let material = match c{
+            TestMat::Concrete(thickness)=>{
+                Material::new(format!("Material {}", i), concrete.clone(), *thickness)
+            }
+            TestMat::Polyurethane(thickness)=>{
+                Material::new(format!("Material {}", i), polyurethane.clone(), *thickness)
+            }
+        };
+        let material = model.add_material(material);
+        construction.materials.push(material);
+    }
     let construction = model.add_construction(construction);
-
+    
     /****************** */
     /* SURFACE GEOMETRY */
     /****************** */
@@ -262,7 +278,7 @@ mod testing {
                 zone_volume,
                 surface_area,
                 window_area,
-                material_is_massive: Some(false),
+                construction: vec![TestMat::Concrete(0.2)],
                 ..Default::default()
             },
         );
