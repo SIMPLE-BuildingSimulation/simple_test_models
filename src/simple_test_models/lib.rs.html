@@ -309,6 +309,22 @@
 <span id="268">268</span>
 <span id="269">269</span>
 <span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -329,6 +345,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */</span>
 
+
 <span class="doccomment">/// The kind of Floating point number used in the</span>
 <span class="doccomment">/// library... the `&quot;float&quot;` feature means it becomes `f32`</span>
 <span class="doccomment">/// and `f64` is used otherwise.</span>
@@ -344,12 +361,33 @@ SOFTWARE.
 <span class="kw">use</span> <span class="ident">simple_model</span>::{
     <span class="ident">hvac::ElectricHeater</span>, <span class="ident">substance::Normal</span> <span class="kw">as</span> <span class="ident">NormalSubstance</span>, <span class="ident">Boundary</span>, <span class="ident">Construction</span>,
     <span class="ident">Fenestration</span>, <span class="ident">FenestrationPositions</span>, <span class="ident">FenestrationType</span>, <span class="ident">Infiltration</span>, <span class="ident">Luminaire</span>, <span class="ident">Material</span>,
-    <span class="ident">SimpleModel</span>, <span class="ident">SimulationStateHeader</span>, <span class="ident">Space</span>, <span class="ident">Substance</span>, <span class="ident">Surface</span>,
+    <span class="ident">SimpleModel</span>, <span class="ident">SimulationStateHeader</span>, <span class="ident">Space</span>, <span class="ident">Surface</span>,
 };
+
+<span class="doccomment">/// The test material</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">TestMat</span> {
+    <span class="doccomment">/// A Concrete with a certain `Float` thickness   </span>
+    <span class="doccomment">/// </span>
+    <span class="doccomment">/// # Properties</span>
+    <span class="doccomment">/// * density: 1700.</span>
+    <span class="doccomment">/// * Specific heat: 800.</span>
+    <span class="doccomment">/// * Thermal Cond.: 0.816</span>
+    <span class="doccomment">/// * Emmisivity: From `options.emmisivity`</span>
+    <span class="ident">Concrete</span>(<span class="ident">Float</span>), 
+
+    <span class="doccomment">/// A Polyurethane with a certain `Float` thickness</span>
+    <span class="doccomment">/// </span>
+    <span class="doccomment">/// # Properties</span>
+    <span class="doccomment">/// * density: 17.5</span>
+    <span class="doccomment">/// * Specific heat: 2400.</span>
+    <span class="doccomment">/// * Thermal Cond.: 0.0252</span>
+    <span class="doccomment">/// * Emmisivity: From `options.emmisivity</span>
+    <span class="ident">Polyurethane</span>(<span class="ident">Float</span>)
+}
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SingleZoneTestBuildingOptions</span> {
     <span class="kw">pub</span> <span class="ident">zone_volume</span>: <span class="ident">Float</span>,
-    <span class="kw">pub</span> <span class="ident">material_is_massive</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>, <span class="comment">// Explicitly mentioned</span>
+    <span class="kw">pub</span> <span class="ident">construction</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TestMat</span><span class="op">&gt;</span>, <span class="comment">// Explicitly mentioned</span>
     <span class="kw">pub</span> <span class="ident">surface_area</span>: <span class="ident">Float</span>,
     <span class="kw">pub</span> <span class="ident">window_area</span>: <span class="ident">Float</span>,
     <span class="kw">pub</span> <span class="ident">heating_power</span>: <span class="ident">Float</span>,
@@ -362,7 +400,7 @@ SOFTWARE.
     <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="ident">SingleZoneTestBuildingOptions</span> {
         <span class="ident">SingleZoneTestBuildingOptions</span> {
             <span class="ident">zone_volume</span>: <span class="op">-</span><span class="number">1.</span>, <span class="comment">// Will be checked... negative numbers panic</span>
-            <span class="ident">material_is_massive</span>: <span class="prelude-val">None</span>,
+            <span class="ident">construction</span>: <span class="ident">Vec::with_capacity</span>(<span class="number">0</span>),
             <span class="ident">surface_area</span>: <span class="op">-</span><span class="number">1.</span>, <span class="comment">// Will be checked... negative numbers panic</span>
             <span class="ident">window_area</span>: <span class="number">0.</span>,
             <span class="ident">heating_power</span>: <span class="number">0.</span>,
@@ -436,46 +474,40 @@ SOFTWARE.
     <span class="comment">/* ADD THE SUBSTANCE */</span>
     <span class="comment">/******************* */</span>
 
-    <span class="kw">let</span> <span class="ident">substance</span>: <span class="ident">Substance</span>;
-    <span class="kw">let</span> <span class="ident">thickness</span>: <span class="ident">Float</span>;
-
-    <span class="kw">let</span> <span class="ident">is_massive</span> <span class="op">=</span> <span class="ident">options</span>
-        .<span class="ident">material_is_massive</span>
-        .<span class="ident">expect</span>(<span class="string">&quot;material_is_massive option required (bool)&quot;</span>);
-    <span class="kw">if</span> <span class="ident">is_massive</span> {
-        <span class="comment">// Massive material</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sub</span> <span class="op">=</span> <span class="ident">NormalSubstance::new</span>(<span class="string">&quot;the substance&quot;</span>.<span class="ident">to_string</span>());
-        <span class="ident">sub</span>.<span class="ident">set_density</span>(<span class="number">1700.</span>)
+    <span class="comment">// Add both substances</span>
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">concrete</span> <span class="op">=</span> <span class="ident">NormalSubstance::new</span>(<span class="string">&quot;concrete&quot;</span>.<span class="ident">to_string</span>());
+    <span class="ident">concrete</span>.<span class="ident">set_density</span>(<span class="number">1700.</span>)
             .<span class="ident">set_specific_heat_capacity</span>(<span class="number">800.</span>)
             .<span class="ident">set_thermal_conductivity</span>(<span class="number">0.816</span>)
             .<span class="ident">set_thermal_absorbtance</span>(<span class="ident">options</span>.<span class="ident">emmisivity</span>);
-        <span class="ident">substance</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">sub</span>.<span class="ident">wrap</span>());
+    <span class="kw">let</span> <span class="ident">concrete</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">concrete</span>.<span class="ident">wrap</span>());
 
-        <span class="ident">thickness</span> <span class="op">=</span> <span class="number">200.</span> <span class="op">/</span> <span class="number">1000.</span>;
-    } <span class="kw">else</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sub</span> <span class="op">=</span> <span class="ident">NormalSubstance::new</span>(<span class="string">&quot;the substance&quot;</span>.<span class="ident">to_string</span>());
-        <span class="ident">sub</span>.<span class="ident">set_density</span>(<span class="number">17.5</span>)
-            .<span class="ident">set_specific_heat_capacity</span>(<span class="number">2400.</span>)
-            .<span class="ident">set_thermal_conductivity</span>(<span class="number">0.0252</span>)
-            .<span class="ident">set_thermal_absorbtance</span>(<span class="ident">options</span>.<span class="ident">emmisivity</span>);
-        <span class="ident">substance</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">sub</span>.<span class="ident">wrap</span>());
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">polyurethane</span> <span class="op">=</span> <span class="ident">NormalSubstance::new</span>(<span class="string">&quot;polyurethane&quot;</span>.<span class="ident">to_string</span>());
+    <span class="ident">polyurethane</span>.<span class="ident">set_density</span>(<span class="number">17.5</span>)
+        .<span class="ident">set_specific_heat_capacity</span>(<span class="number">2400.</span>)
+        .<span class="ident">set_thermal_conductivity</span>(<span class="number">0.0252</span>)
+        .<span class="ident">set_thermal_absorbtance</span>(<span class="ident">options</span>.<span class="ident">emmisivity</span>);
+    <span class="kw">let</span> <span class="ident">polyurethane</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">polyurethane</span>.<span class="ident">wrap</span>());
 
-        <span class="ident">thickness</span> <span class="op">=</span> <span class="number">20.</span> <span class="op">/</span> <span class="number">1000.</span>;
-    }
 
-    <span class="comment">/****************** */</span>
-    <span class="comment">/* ADD THE MATERIAL */</span>
-    <span class="comment">/****************** */</span>
-    <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="ident">Material::new</span>(<span class="string">&quot;the material&quot;</span>.<span class="ident">to_string</span>(), <span class="ident">substance</span>, <span class="ident">thickness</span>);
-    <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_material</span>(<span class="ident">material</span>);
-
-    <span class="comment">/********************** */</span>
-    <span class="comment">/* ADD THE CONSTRUCTION */</span>
-    <span class="comment">/********************** */</span>
+    <span class="comment">/*********************************** */</span>
+    <span class="comment">/* ADD THE MATERIAL AND CONSTRUCTION */</span>
+    <span class="comment">/*********************************** */</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">construction</span> <span class="op">=</span> <span class="ident">Construction::new</span>(<span class="string">&quot;the construction&quot;</span>.<span class="ident">to_string</span>());
-    <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">push</span>(<span class="ident">material</span>);
+    <span class="kw">for</span> (<span class="ident">i</span>,<span class="ident">c</span>) <span class="kw">in</span> <span class="ident">options</span>.<span class="ident">construction</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>(){
+        <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">c</span>{
+            <span class="ident">TestMat::Concrete</span>(<span class="ident">thickness</span>)=&gt;{
+                <span class="ident">Material::new</span>(<span class="macro">format!</span>(<span class="string">&quot;Material {}&quot;</span>, <span class="ident">i</span>), <span class="ident">concrete</span>.<span class="ident">clone</span>(), <span class="kw-2">*</span><span class="ident">thickness</span>)
+            }
+            <span class="ident">TestMat::Polyurethane</span>(<span class="ident">thickness</span>)=&gt;{
+                <span class="ident">Material::new</span>(<span class="macro">format!</span>(<span class="string">&quot;Material {}&quot;</span>, <span class="ident">i</span>), <span class="ident">polyurethane</span>.<span class="ident">clone</span>(), <span class="kw-2">*</span><span class="ident">thickness</span>)
+            }
+        };
+        <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_material</span>(<span class="ident">material</span>);
+        <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">push</span>(<span class="ident">material</span>);
+    }
     <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_construction</span>(<span class="ident">construction</span>);
-
+    
     <span class="comment">/****************** */</span>
     <span class="comment">/* SURFACE GEOMETRY */</span>
     <span class="comment">/****************** */</span>
@@ -573,12 +605,12 @@ SOFTWARE.
                 <span class="ident">zone_volume</span>,
                 <span class="ident">surface_area</span>,
                 <span class="ident">window_area</span>,
-                <span class="ident">material_is_massive</span>: <span class="prelude-val">Some</span>(<span class="bool-val">false</span>),
+                <span class="ident">construction</span>: <span class="macro">vec!</span>[<span class="ident">TestMat::Concrete</span>(<span class="number">0.2</span>)],
                 ..<span class="ident">Default::default</span>()
             },
         );
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="simple_test_models" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (e09449220 2022-05-31)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="simple_test_models" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (420c970cb 2022-06-09)" ></div>
 </body></html>
