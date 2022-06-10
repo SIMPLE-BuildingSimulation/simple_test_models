@@ -34,7 +34,7 @@ use std::rc::Rc;
 use simple_model::{
     hvac::ElectricHeater, substance::Normal as NormalSubstance, Boundary, Construction,
     Fenestration, FenestrationPositions, FenestrationType, Infiltration, Luminaire, Material,
-    SimpleModel, SimulationStateHeader, Space, Substance, Surface,
+    SimpleModel, SimulationStateHeader, Space, Surface,
 };
 
 /// The test material
