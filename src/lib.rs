@@ -18,7 +18,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
 /// The kind of Floating point number used in the
 /// library... the `"float"` feature means it becomes `f32`
 /// and `f64` is used otherwise.
@@ -40,22 +39,22 @@ use simple_model::{
 /// The test material
 pub enum TestMat {
     /// A Concrete with a certain `Float` thickness   
-    /// 
+    ///
     /// # Properties
     /// * density: 1700.
     /// * Specific heat: 800.
     /// * Thermal Cond.: 0.816
     /// * Emmisivity: From `options.emmisivity`
-    Concrete(Float), 
+    Concrete(Float),
 
     /// A Polyurethane with a certain `Float` thickness
-    /// 
+    ///
     /// # Properties
     /// * density: 17.5
     /// * Specific heat: 2400.
     /// * Thermal Cond.: 0.0252
     /// * Emmisivity: From `options.emmisivity
-    Polyurethane(Float)
+    Polyurethane(Float),
 }
 
 pub struct SingleZoneTestBuildingOptions {
@@ -67,6 +66,7 @@ pub struct SingleZoneTestBuildingOptions {
     pub lighting_power: Float,
     pub infiltration_rate: Float,
     pub emmisivity: Float,
+    pub solar_absorbtance: Float,
 }
 
 impl Default for SingleZoneTestBuildingOptions {
@@ -80,6 +80,7 @@ impl Default for SingleZoneTestBuildingOptions {
             lighting_power: 0.,
             infiltration_rate: 0.,
             emmisivity: 0.84,
+            solar_absorbtance: 0.7,
         }
     }
 }
@@ -149,30 +150,34 @@ pub fn get_single_zone_test_building(
 
     // Add both substances
     let mut concrete = NormalSubstance::new("concrete".to_string());
-    concrete.set_density(1700.)
-            .set_specific_heat_capacity(800.)
-            .set_thermal_conductivity(0.816)
-            .set_thermal_absorbtance(options.emmisivity);
+    concrete
+        .set_density(1700.)
+        .set_specific_heat_capacity(800.)
+        .set_thermal_conductivity(0.816)
+        .set_thermal_absorbtance(options.emmisivity)
+        .set_solar_absorbtance(options.solar_absorbtance);
     let concrete = model.add_substance(concrete.wrap());
 
     let mut polyurethane = NormalSubstance::new("polyurethane".to_string());
-    polyurethane.set_density(17.5)
+    polyurethane
+        .set_density(17.5)
         .set_specific_heat_capacity(2400.)
         .set_thermal_conductivity(0.0252)
-        .set_thermal_absorbtance(options.emmisivity);
-    let polyurethane = model.add_substance(polyurethane.wrap());
+        .set_thermal_absorbtance(options.emmisivity)
+        .set_solar_absorbtance(options.solar_absorbtance);
 
+    let polyurethane = model.add_substance(polyurethane.wrap());
 
     /*********************************** */
     /* ADD THE MATERIAL AND CONSTRUCTION */
     /*********************************** */
     let mut construction = Construction::new("the construction".to_string());
-    for (i,c) in options.construction.iter().enumerate(){
-        let material = match c{
-            TestMat::Concrete(thickness)=>{
+    for (i, c) in options.construction.iter().enumerate() {
+        let material = match c {
+            TestMat::Concrete(thickness) => {
                 Material::new(format!("Material {}", i), concrete.clone(), *thickness)
             }
-            TestMat::Polyurethane(thickness)=>{
+            TestMat::Polyurethane(thickness) => {
                 Material::new(format!("Material {}", i), polyurethane.clone(), *thickness)
             }
         };
@@ -180,7 +185,7 @@ pub fn get_single_zone_test_building(
         construction.materials.push(material);
     }
     let construction = model.add_construction(construction);
-    
+
     /****************** */
     /* SURFACE GEOMETRY */
     /****************** */
