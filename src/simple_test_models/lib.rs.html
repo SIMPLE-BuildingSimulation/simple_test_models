@@ -325,6 +325,11 @@
 <span id="284">284</span>
 <span id="285">285</span>
 <span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -344,7 +349,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */</span>
-
 
 <span class="doccomment">/// The kind of Floating point number used in the</span>
 <span class="doccomment">/// library... the `&quot;float&quot;` feature means it becomes `f32`</span>
@@ -367,22 +371,22 @@ SOFTWARE.
 <span class="doccomment">/// The test material</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">TestMat</span> {
     <span class="doccomment">/// A Concrete with a certain `Float` thickness   </span>
-    <span class="doccomment">/// </span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # Properties</span>
     <span class="doccomment">/// * density: 1700.</span>
     <span class="doccomment">/// * Specific heat: 800.</span>
     <span class="doccomment">/// * Thermal Cond.: 0.816</span>
     <span class="doccomment">/// * Emmisivity: From `options.emmisivity`</span>
-    <span class="ident">Concrete</span>(<span class="ident">Float</span>), 
+    <span class="ident">Concrete</span>(<span class="ident">Float</span>),
 
     <span class="doccomment">/// A Polyurethane with a certain `Float` thickness</span>
-    <span class="doccomment">/// </span>
+    <span class="doccomment">///</span>
     <span class="doccomment">/// # Properties</span>
     <span class="doccomment">/// * density: 17.5</span>
     <span class="doccomment">/// * Specific heat: 2400.</span>
     <span class="doccomment">/// * Thermal Cond.: 0.0252</span>
     <span class="doccomment">/// * Emmisivity: From `options.emmisivity</span>
-    <span class="ident">Polyurethane</span>(<span class="ident">Float</span>)
+    <span class="ident">Polyurethane</span>(<span class="ident">Float</span>),
 }
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SingleZoneTestBuildingOptions</span> {
@@ -394,6 +398,7 @@ SOFTWARE.
     <span class="kw">pub</span> <span class="ident">lighting_power</span>: <span class="ident">Float</span>,
     <span class="kw">pub</span> <span class="ident">infiltration_rate</span>: <span class="ident">Float</span>,
     <span class="kw">pub</span> <span class="ident">emmisivity</span>: <span class="ident">Float</span>,
+    <span class="kw">pub</span> <span class="ident">solar_absorbtance</span>: <span class="ident">Float</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">SingleZoneTestBuildingOptions</span> {
@@ -407,6 +412,7 @@ SOFTWARE.
             <span class="ident">lighting_power</span>: <span class="number">0.</span>,
             <span class="ident">infiltration_rate</span>: <span class="number">0.</span>,
             <span class="ident">emmisivity</span>: <span class="number">0.84</span>,
+            <span class="ident">solar_absorbtance</span>: <span class="number">0.7</span>,
         }
     }
 }
@@ -476,30 +482,34 @@ SOFTWARE.
 
     <span class="comment">// Add both substances</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">concrete</span> <span class="op">=</span> <span class="ident">NormalSubstance::new</span>(<span class="string">&quot;concrete&quot;</span>.<span class="ident">to_string</span>());
-    <span class="ident">concrete</span>.<span class="ident">set_density</span>(<span class="number">1700.</span>)
-            .<span class="ident">set_specific_heat_capacity</span>(<span class="number">800.</span>)
-            .<span class="ident">set_thermal_conductivity</span>(<span class="number">0.816</span>)
-            .<span class="ident">set_thermal_absorbtance</span>(<span class="ident">options</span>.<span class="ident">emmisivity</span>);
+    <span class="ident">concrete</span>
+        .<span class="ident">set_density</span>(<span class="number">1700.</span>)
+        .<span class="ident">set_specific_heat_capacity</span>(<span class="number">800.</span>)
+        .<span class="ident">set_thermal_conductivity</span>(<span class="number">0.816</span>)
+        .<span class="ident">set_thermal_absorbtance</span>(<span class="ident">options</span>.<span class="ident">emmisivity</span>)
+        .<span class="ident">set_solar_absorbtance</span>(<span class="ident">options</span>.<span class="ident">solar_absorbtance</span>);
     <span class="kw">let</span> <span class="ident">concrete</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">concrete</span>.<span class="ident">wrap</span>());
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">polyurethane</span> <span class="op">=</span> <span class="ident">NormalSubstance::new</span>(<span class="string">&quot;polyurethane&quot;</span>.<span class="ident">to_string</span>());
-    <span class="ident">polyurethane</span>.<span class="ident">set_density</span>(<span class="number">17.5</span>)
+    <span class="ident">polyurethane</span>
+        .<span class="ident">set_density</span>(<span class="number">17.5</span>)
         .<span class="ident">set_specific_heat_capacity</span>(<span class="number">2400.</span>)
         .<span class="ident">set_thermal_conductivity</span>(<span class="number">0.0252</span>)
-        .<span class="ident">set_thermal_absorbtance</span>(<span class="ident">options</span>.<span class="ident">emmisivity</span>);
-    <span class="kw">let</span> <span class="ident">polyurethane</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">polyurethane</span>.<span class="ident">wrap</span>());
+        .<span class="ident">set_thermal_absorbtance</span>(<span class="ident">options</span>.<span class="ident">emmisivity</span>)
+        .<span class="ident">set_solar_absorbtance</span>(<span class="ident">options</span>.<span class="ident">solar_absorbtance</span>);
 
+    <span class="kw">let</span> <span class="ident">polyurethane</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">polyurethane</span>.<span class="ident">wrap</span>());
 
     <span class="comment">/*********************************** */</span>
     <span class="comment">/* ADD THE MATERIAL AND CONSTRUCTION */</span>
     <span class="comment">/*********************************** */</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">construction</span> <span class="op">=</span> <span class="ident">Construction::new</span>(<span class="string">&quot;the construction&quot;</span>.<span class="ident">to_string</span>());
-    <span class="kw">for</span> (<span class="ident">i</span>,<span class="ident">c</span>) <span class="kw">in</span> <span class="ident">options</span>.<span class="ident">construction</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>(){
-        <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">c</span>{
-            <span class="ident">TestMat::Concrete</span>(<span class="ident">thickness</span>)=&gt;{
+    <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">c</span>) <span class="kw">in</span> <span class="ident">options</span>.<span class="ident">construction</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
+        <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">c</span> {
+            <span class="ident">TestMat::Concrete</span>(<span class="ident">thickness</span>) =&gt; {
                 <span class="ident">Material::new</span>(<span class="macro">format!</span>(<span class="string">&quot;Material {}&quot;</span>, <span class="ident">i</span>), <span class="ident">concrete</span>.<span class="ident">clone</span>(), <span class="kw-2">*</span><span class="ident">thickness</span>)
             }
-            <span class="ident">TestMat::Polyurethane</span>(<span class="ident">thickness</span>)=&gt;{
+            <span class="ident">TestMat::Polyurethane</span>(<span class="ident">thickness</span>) =&gt; {
                 <span class="ident">Material::new</span>(<span class="macro">format!</span>(<span class="string">&quot;Material {}&quot;</span>, <span class="ident">i</span>), <span class="ident">polyurethane</span>.<span class="ident">clone</span>(), <span class="kw-2">*</span><span class="ident">thickness</span>)
             }
         };
@@ -507,7 +517,7 @@ SOFTWARE.
         <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">push</span>(<span class="ident">material</span>);
     }
     <span class="kw">let</span> <span class="ident">construction</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_construction</span>(<span class="ident">construction</span>);
-    
+
     <span class="comment">/****************** */</span>
     <span class="comment">/* SURFACE GEOMETRY */</span>
     <span class="comment">/****************** */</span>
@@ -612,5 +622,5 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="simple_test_models" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (420c970cb 2022-06-09)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="simple_test_models" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (546c826f0 2022-06-12)" ></div>
 </body></html>
