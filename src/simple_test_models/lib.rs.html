@@ -330,6 +330,10 @@
 <span id="289">289</span>
 <span id="290">290</span>
 <span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -486,8 +490,10 @@ SOFTWARE.
         .<span class="ident">set_density</span>(<span class="number">1700.</span>)
         .<span class="ident">set_specific_heat_capacity</span>(<span class="number">800.</span>)
         .<span class="ident">set_thermal_conductivity</span>(<span class="number">0.816</span>)
-        .<span class="ident">set_thermal_absorbtance</span>(<span class="ident">options</span>.<span class="ident">emmisivity</span>)
-        .<span class="ident">set_solar_absorbtance</span>(<span class="ident">options</span>.<span class="ident">solar_absorbtance</span>);
+        .<span class="ident">set_front_thermal_absorbtance</span>(<span class="ident">options</span>.<span class="ident">emmisivity</span>)
+        .<span class="ident">set_back_thermal_absorbtance</span>(<span class="ident">options</span>.<span class="ident">emmisivity</span>)
+        .<span class="ident">set_front_solar_absorbtance</span>(<span class="ident">options</span>.<span class="ident">solar_absorbtance</span>)
+        .<span class="ident">set_back_solar_absorbtance</span>(<span class="ident">options</span>.<span class="ident">solar_absorbtance</span>);
     <span class="kw">let</span> <span class="ident">concrete</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">concrete</span>.<span class="ident">wrap</span>());
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">polyurethane</span> <span class="op">=</span> <span class="ident">NormalSubstance::new</span>(<span class="string">&quot;polyurethane&quot;</span>.<span class="ident">to_string</span>());
@@ -495,8 +501,10 @@ SOFTWARE.
         .<span class="ident">set_density</span>(<span class="number">17.5</span>)
         .<span class="ident">set_specific_heat_capacity</span>(<span class="number">2400.</span>)
         .<span class="ident">set_thermal_conductivity</span>(<span class="number">0.0252</span>)
-        .<span class="ident">set_thermal_absorbtance</span>(<span class="ident">options</span>.<span class="ident">emmisivity</span>)
-        .<span class="ident">set_solar_absorbtance</span>(<span class="ident">options</span>.<span class="ident">solar_absorbtance</span>);
+        .<span class="ident">set_front_thermal_absorbtance</span>(<span class="ident">options</span>.<span class="ident">emmisivity</span>)
+        .<span class="ident">set_back_thermal_absorbtance</span>(<span class="ident">options</span>.<span class="ident">emmisivity</span>)
+        .<span class="ident">set_front_solar_absorbtance</span>(<span class="ident">options</span>.<span class="ident">solar_absorbtance</span>)
+        .<span class="ident">set_back_solar_absorbtance</span>(<span class="ident">options</span>.<span class="ident">solar_absorbtance</span>);
 
     <span class="kw">let</span> <span class="ident">polyurethane</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">polyurethane</span>.<span class="ident">wrap</span>());
 
@@ -622,5 +630,5 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="simple_test_models" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (546c826f0 2022-06-12)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="simple_test_models" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (bb8c2f411 2022-06-19)" ></div>
 </body></html>
