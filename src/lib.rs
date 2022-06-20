@@ -154,8 +154,10 @@ pub fn get_single_zone_test_building(
         .set_density(1700.)
         .set_specific_heat_capacity(800.)
         .set_thermal_conductivity(0.816)
-        .set_thermal_absorbtance(options.emmisivity)
-        .set_solar_absorbtance(options.solar_absorbtance);
+        .set_front_thermal_absorbtance(options.emmisivity)
+        .set_back_thermal_absorbtance(options.emmisivity)
+        .set_front_solar_absorbtance(options.solar_absorbtance)
+        .set_back_solar_absorbtance(options.solar_absorbtance);
     let concrete = model.add_substance(concrete.wrap());
 
     let mut polyurethane = NormalSubstance::new("polyurethane".to_string());
@@ -163,8 +165,10 @@ pub fn get_single_zone_test_building(
         .set_density(17.5)
         .set_specific_heat_capacity(2400.)
         .set_thermal_conductivity(0.0252)
-        .set_thermal_absorbtance(options.emmisivity)
-        .set_solar_absorbtance(options.solar_absorbtance);
+        .set_front_thermal_absorbtance(options.emmisivity)
+        .set_back_thermal_absorbtance(options.emmisivity)
+        .set_front_solar_absorbtance(options.solar_absorbtance)
+        .set_back_solar_absorbtance(options.solar_absorbtance);
 
     let polyurethane = model.add_substance(polyurethane.wrap());
 
