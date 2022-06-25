@@ -1,5 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.css" integrity="sha384-TEMocfGvRuD1rIAacqrknm5BQZ7W7uWitoih+jMNFXQIbNl16bO8OZmylH/Vi/Ei" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.9.0/dist/katex.min.js" integrity="sha384-jmxIlussZWB7qCuB+PgKG1uLjjxbVVIayPJwi6cG6Zb4YKq0JIw+OMnkkEC7kYCq" crossorigin="anonymous"></script>
 <script>
   "use strict";
@@ -334,6 +333,34 @@
 <span id="293">293</span>
 <span id="294">294</span>
 <span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -391,6 +418,18 @@ SOFTWARE.
     <span class="doccomment">/// * Thermal Cond.: 0.0252</span>
     <span class="doccomment">/// * Emmisivity: From `options.emmisivity</span>
     <span class="ident">Polyurethane</span>(<span class="ident">Float</span>),
+
+    <span class="doccomment">/// A Glass material defined based on the thikness and solar_transmittance</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Properties</span>
+    <span class="doccomment">/// * density: 2.5</span>
+    <span class="doccomment">/// * Specific heat: 840.</span>
+    <span class="doccomment">/// * Thermal Cond.: 1.0</span>
+    <span class="doccomment">/// * Emmisivity: From `options.emmisivity</span>
+    <span class="ident">Glass</span>(<span class="ident">Float</span>, <span class="ident">Float</span>)
+
+
+
 }
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SingleZoneTestBuildingOptions</span> {
@@ -508,6 +547,7 @@ SOFTWARE.
 
     <span class="kw">let</span> <span class="ident">polyurethane</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">polyurethane</span>.<span class="ident">wrap</span>());
 
+
     <span class="comment">/*********************************** */</span>
     <span class="comment">/* ADD THE MATERIAL AND CONSTRUCTION */</span>
     <span class="comment">/*********************************** */</span>
@@ -516,10 +556,25 @@ SOFTWARE.
         <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">c</span> {
             <span class="ident">TestMat::Concrete</span>(<span class="ident">thickness</span>) =&gt; {
                 <span class="ident">Material::new</span>(<span class="macro">format!</span>(<span class="string">&quot;Material {}&quot;</span>, <span class="ident">i</span>), <span class="ident">concrete</span>.<span class="ident">clone</span>(), <span class="kw-2">*</span><span class="ident">thickness</span>)
-            }
+            },
             <span class="ident">TestMat::Polyurethane</span>(<span class="ident">thickness</span>) =&gt; {
                 <span class="ident">Material::new</span>(<span class="macro">format!</span>(<span class="string">&quot;Material {}&quot;</span>, <span class="ident">i</span>), <span class="ident">polyurethane</span>.<span class="ident">clone</span>(), <span class="kw-2">*</span><span class="ident">thickness</span>)
+            },
+            <span class="ident">TestMat::Glass</span>(<span class="ident">thickness</span>, <span class="ident">solar_transmittance</span>) =&gt; {
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">glass</span> <span class="op">=</span> <span class="ident">NormalSubstance::new</span>(<span class="string">&quot;polyurethane&quot;</span>.<span class="ident">to_string</span>());
+                <span class="ident">glass</span>
+                    .<span class="ident">set_density</span>(<span class="number">2.5</span>)
+                    .<span class="ident">set_specific_heat_capacity</span>(<span class="number">840.</span>)
+                    .<span class="ident">set_thermal_conductivity</span>(<span class="number">1.</span>)
+                    .<span class="ident">set_front_thermal_absorbtance</span>(<span class="ident">options</span>.<span class="ident">emmisivity</span>)
+                    .<span class="ident">set_back_thermal_absorbtance</span>(<span class="ident">options</span>.<span class="ident">emmisivity</span>)
+                    .<span class="ident">set_front_solar_absorbtance</span>(<span class="ident">options</span>.<span class="ident">solar_absorbtance</span>)
+                    .<span class="ident">set_back_solar_absorbtance</span>(<span class="ident">options</span>.<span class="ident">solar_absorbtance</span>)
+                    .<span class="ident">set_solar_transmittance</span>(<span class="kw-2">*</span><span class="ident">solar_transmittance</span>);
+                <span class="kw">let</span> <span class="ident">glass</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">glass</span>.<span class="ident">wrap</span>());
+                <span class="ident">Material::new</span>(<span class="macro">format!</span>(<span class="string">&quot;Material {}&quot;</span>, <span class="ident">i</span>), <span class="ident">glass</span>, <span class="kw-2">*</span><span class="ident">thickness</span>)
             }
+
         };
         <span class="kw">let</span> <span class="ident">material</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_material</span>(<span class="ident">material</span>);
         <span class="ident">construction</span>.<span class="ident">materials</span>.<span class="ident">push</span>(<span class="ident">material</span>);
@@ -630,5 +685,5 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="simple_test_models" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (bb8c2f411 2022-06-19)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="simple_test_models" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (fdca237d5 2022-06-24)" ></div>
 </body></html>
