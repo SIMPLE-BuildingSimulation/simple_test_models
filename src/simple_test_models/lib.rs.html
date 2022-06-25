@@ -361,6 +361,18 @@
 <span id="321">321</span>
 <span id="322">322</span>
 <span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -394,7 +406,7 @@ SOFTWARE.
 <span class="kw">use</span> <span class="ident">std::rc::Rc</span>;
 
 <span class="kw">use</span> <span class="ident">simple_model</span>::{
-    <span class="ident">hvac::ElectricHeater</span>, <span class="ident">substance::Normal</span> <span class="kw">as</span> <span class="ident">NormalSubstance</span>, <span class="ident">Boundary</span>, <span class="ident">Construction</span>,
+    <span class="ident">hvac::ElectricHeater</span>, <span class="ident">substance</span>::{<span class="ident">Normal</span> <span class="kw">as</span> <span class="ident">NormalSubstance</span>, <span class="ident">Gas</span>, <span class="ident">gas::StandardGas</span>}, <span class="ident">Boundary</span>, <span class="ident">Construction</span>,
     <span class="ident">Fenestration</span>, <span class="ident">FenestrationPositions</span>, <span class="ident">FenestrationType</span>, <span class="ident">Infiltration</span>, <span class="ident">Luminaire</span>, <span class="ident">Material</span>,
     <span class="ident">SimpleModel</span>, <span class="ident">SimulationStateHeader</span>, <span class="ident">Space</span>, <span class="ident">Surface</span>,
 };
@@ -426,7 +438,13 @@ SOFTWARE.
     <span class="doccomment">/// * Specific heat: 840.</span>
     <span class="doccomment">/// * Thermal Cond.: 1.0</span>
     <span class="doccomment">/// * Emmisivity: From `options.emmisivity</span>
-    <span class="ident">Glass</span>(<span class="ident">Float</span>, <span class="ident">Float</span>)
+    <span class="ident">Glass</span>(<span class="ident">Float</span>, <span class="ident">Float</span>),
+
+    <span class="doccomment">/// Air Cavity</span>
+    <span class="ident">Air</span>(<span class="ident">Float</span>)
+
+    
+
 
 
 
@@ -547,6 +565,9 @@ SOFTWARE.
 
     <span class="kw">let</span> <span class="ident">polyurethane</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">polyurethane</span>.<span class="ident">wrap</span>());
 
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">air</span> <span class="op">=</span> <span class="ident">Gas::new</span>(<span class="string">&quot;some_gas&quot;</span>.<span class="ident">to_string</span>());
+        <span class="ident">air</span>.<span class="ident">set_gas</span>(<span class="ident">StandardGas::Air</span>);
+    <span class="kw">let</span> <span class="ident">air</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">air</span>.<span class="ident">wrap</span>());
 
     <span class="comment">/*********************************** */</span>
     <span class="comment">/* ADD THE MATERIAL AND CONSTRUCTION */</span>
@@ -573,6 +594,9 @@ SOFTWARE.
                     .<span class="ident">set_solar_transmittance</span>(<span class="kw-2">*</span><span class="ident">solar_transmittance</span>);
                 <span class="kw">let</span> <span class="ident">glass</span> <span class="op">=</span> <span class="ident">model</span>.<span class="ident">add_substance</span>(<span class="ident">glass</span>.<span class="ident">wrap</span>());
                 <span class="ident">Material::new</span>(<span class="macro">format!</span>(<span class="string">&quot;Material {}&quot;</span>, <span class="ident">i</span>), <span class="ident">glass</span>, <span class="kw-2">*</span><span class="ident">thickness</span>)
+            },
+            <span class="ident">TestMat::Air</span>(<span class="ident">thickness</span>)=&gt;{
+                <span class="ident">Material::new</span>(<span class="macro">format!</span>(<span class="string">&quot;Material {}&quot;</span>, <span class="ident">i</span>), <span class="ident">air</span>.<span class="ident">clone</span>(), <span class="kw-2">*</span><span class="ident">thickness</span>)
             }
 
         };
