@@ -31,7 +31,7 @@ use geometry3d::{Loop3D, Point3D, Polygon3D};
 use std::rc::Rc;
 
 use simple_model::{
-    hvac::ElectricHeater, substance::Normal as NormalSubstance, Boundary, Construction,
+    hvac::ElectricHeater, substance::{Normal as NormalSubstance, Gas, gas::StandardGas}, Boundary, Construction,
     Fenestration, FenestrationPositions, FenestrationType, Infiltration, Luminaire, Material,
     SimpleModel, SimulationStateHeader, Space, Surface,
 };
@@ -63,7 +63,13 @@ pub enum TestMat {
     /// * Specific heat: 840.
     /// * Thermal Cond.: 1.0
     /// * Emmisivity: From `options.emmisivity
-    Glass(Float, Float)
+    Glass(Float, Float),
+
+    /// Air Cavity
+    Air(Float)
+
+    
+
 
 
 
@@ -184,6 +190,9 @@ pub fn get_single_zone_test_building(
 
     let polyurethane = model.add_substance(polyurethane.wrap());
 
+    let mut air = Gas::new("some_gas".to_string());
+        air.set_gas(StandardGas::Air);
+    let air = model.add_substance(air.wrap());
 
     /*********************************** */
     /* ADD THE MATERIAL AND CONSTRUCTION */
@@ -210,6 +219,9 @@ pub fn get_single_zone_test_building(
                     .set_solar_transmittance(*solar_transmittance);
                 let glass = model.add_substance(glass.wrap());
                 Material::new(format!("Material {}", i), glass, *thickness)
+            },
+            TestMat::Air(thickness)=>{
+                Material::new(format!("Material {}", i), air.clone(), *thickness)
             }
 
         };
