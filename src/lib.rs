@@ -55,6 +55,18 @@ pub enum TestMat {
     /// * Thermal Cond.: 0.0252
     /// * Emmisivity: From `options.emmisivity
     Polyurethane(Float),
+
+    /// A Glass material defined based on the thikness and solar_transmittance
+    ///
+    /// # Properties
+    /// * density: 2.5
+    /// * Specific heat: 840.
+    /// * Thermal Cond.: 1.0
+    /// * Emmisivity: From `options.emmisivity
+    Glass(Float, Float)
+
+
+
 }
 
 pub struct SingleZoneTestBuildingOptions {
@@ -172,6 +184,7 @@ pub fn get_single_zone_test_building(
 
     let polyurethane = model.add_substance(polyurethane.wrap());
 
+
     /*********************************** */
     /* ADD THE MATERIAL AND CONSTRUCTION */
     /*********************************** */
@@ -180,10 +193,25 @@ pub fn get_single_zone_test_building(
         let material = match c {
             TestMat::Concrete(thickness) => {
                 Material::new(format!("Material {}", i), concrete.clone(), *thickness)
-            }
+            },
             TestMat::Polyurethane(thickness) => {
                 Material::new(format!("Material {}", i), polyurethane.clone(), *thickness)
+            },
+            TestMat::Glass(thickness, solar_transmittance) => {
+                let mut glass = NormalSubstance::new("polyurethane".to_string());
+                glass
+                    .set_density(2.5)
+                    .set_specific_heat_capacity(840.)
+                    .set_thermal_conductivity(1.)
+                    .set_front_thermal_absorbtance(options.emmisivity)
+                    .set_back_thermal_absorbtance(options.emmisivity)
+                    .set_front_solar_absorbtance(options.solar_absorbtance)
+                    .set_back_solar_absorbtance(options.solar_absorbtance)
+                    .set_solar_transmittance(*solar_transmittance);
+                let glass = model.add_substance(glass.wrap());
+                Material::new(format!("Material {}", i), glass, *thickness)
             }
+
         };
         let material = model.add_material(material);
         construction.materials.push(material);
