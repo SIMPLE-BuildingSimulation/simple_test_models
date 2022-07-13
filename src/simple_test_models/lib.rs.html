@@ -36,7 +36,7 @@
         </a><h2 class="location"></h2>
     </nav>
     <nav class="sidebar"><a class="sidebar-logo" href="../../simple_test_models/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../simple_test_models/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
+        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../simple_test_models/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1">
                                 <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
                         </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
@@ -373,6 +373,33 @@
 <span id="333">333</span>
 <span id="334">334</span>
 <span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
 </pre><pre class="rust"><code><span class="comment">/*
 MIT License
 Copyright (c) 2021 Germán Molina
@@ -392,6 +419,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */</span>
+
+<span class="attribute">#![<span class="ident">deny</span>(<span class="ident">missing_docs</span>)]</span>
+
+<span class="doccomment">//! Functions for creating small SIMPLE models</span>
 
 <span class="doccomment">/// The kind of Floating point number used in the</span>
 <span class="doccomment">/// library... the `&quot;float&quot;` feature means it becomes `f32`</span>
@@ -450,16 +481,37 @@ SOFTWARE.
 
 }
 
+<span class="doccomment">/// Characteristics of the Zone of the single-zone model</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SingleZoneTestBuildingOptions</span> {
+    <span class="doccomment">/// Volume, in m3</span>
     <span class="kw">pub</span> <span class="ident">zone_volume</span>: <span class="ident">Float</span>,
+
+    <span class="doccomment">/// The construction, built out of [`TestMat`]</span>
     <span class="kw">pub</span> <span class="ident">construction</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TestMat</span><span class="op">&gt;</span>, <span class="comment">// Explicitly mentioned</span>
+    
+    <span class="doccomment">/// The surface area... this will be a single wall</span>
     <span class="kw">pub</span> <span class="ident">surface_area</span>: <span class="ident">Float</span>,
+
+    <span class="doccomment">/// The window area, will be subtracted from the surface area</span>
     <span class="kw">pub</span> <span class="ident">window_area</span>: <span class="ident">Float</span>,
+
+    <span class="doccomment">/// The power of the heating in the zone, in W</span>
     <span class="kw">pub</span> <span class="ident">heating_power</span>: <span class="ident">Float</span>,
+
+    <span class="doccomment">/// The power of the lighting in the wall, in m3.</span>
     <span class="kw">pub</span> <span class="ident">lighting_power</span>: <span class="ident">Float</span>,
+
+    <span class="doccomment">/// The infiltration rate, in m3/s</span>
     <span class="kw">pub</span> <span class="ident">infiltration_rate</span>: <span class="ident">Float</span>,
+
+    <span class="doccomment">/// The emmisivity of the substances (assigned to all)</span>
     <span class="kw">pub</span> <span class="ident">emmisivity</span>: <span class="ident">Float</span>,
+
+    <span class="doccomment">/// The solar absorbtance of the substances, assigned to all</span>
     <span class="kw">pub</span> <span class="ident">solar_absorbtance</span>: <span class="ident">Float</span>,
+
+    <span class="doccomment">/// In degrees. When 0, the exterior points South</span>
+    <span class="kw">pub</span> <span class="ident">orientation</span>: <span class="ident">Float</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">SingleZoneTestBuildingOptions</span> {
@@ -474,10 +526,12 @@ SOFTWARE.
             <span class="ident">infiltration_rate</span>: <span class="number">0.</span>,
             <span class="ident">emmisivity</span>: <span class="number">0.84</span>,
             <span class="ident">solar_absorbtance</span>: <span class="number">0.7</span>,
+            <span class="ident">orientation</span>: <span class="number">0.0</span>,
         }
     }
 }
 
+<span class="doccomment">/// Adds a luminare to the model</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_luminaire</span>(
     <span class="ident">model</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimpleModel</span>,
     <span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">SingleZoneTestBuildingOptions</span>,
@@ -491,6 +545,7 @@ SOFTWARE.
     <span class="ident">model</span>.<span class="ident">add_luminaire</span>(<span class="ident">luminaire</span>, <span class="ident">header</span>);
 }
 
+<span class="doccomment">/// Adds a heater to the model</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_heater</span>(
     <span class="ident">model</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SimpleModel</span>,
     <span class="ident">options</span>: <span class="kw-2">&amp;</span><span class="ident">SingleZoneTestBuildingOptions</span>,
@@ -517,9 +572,8 @@ SOFTWARE.
     <span class="comment">/* ADD THE SPACE */</span>
     <span class="comment">/*************** */</span>
     <span class="kw">let</span> <span class="ident">zone_volume</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">zone_volume</span>;
-    <span class="kw">if</span> <span class="ident">zone_volume</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
-        <span class="macro">panic!</span>(<span class="string">&quot;A positive zone_volume parameter is required (Float)&quot;</span>);
-    }
+    <span class="macro">assert!</span>(<span class="ident">zone_volume</span> <span class="op">&gt;</span> <span class="number">0.0</span>, <span class="string">&quot;A positive zone_volume parameter is required (Float)&quot;</span>);
+    
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">space</span> <span class="op">=</span> <span class="ident">Space::new</span>(<span class="string">&quot;Some space&quot;</span>.<span class="ident">to_string</span>());
     <span class="ident">space</span>.<span class="ident">set_volume</span>(<span class="ident">zone_volume</span>);
@@ -610,26 +664,26 @@ SOFTWARE.
     <span class="comment">/****************** */</span>
     <span class="comment">// Wall</span>
     <span class="kw">let</span> <span class="ident">surface_area</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">surface_area</span>;
-    <span class="kw">if</span> <span class="ident">surface_area</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
-        <span class="macro">panic!</span>(<span class="string">&quot;A positive surface_area option is needed (Float)&quot;</span>);
-    }
+    <span class="macro">assert!</span>(<span class="ident">surface_area</span> <span class="op">&gt;</span> <span class="number">0.0</span>, <span class="string">&quot;A positive surface_area option is needed (Float)&quot;</span>);
+    
 
     <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> (<span class="ident">surface_area</span> <span class="op">/</span> <span class="number">4.</span>).<span class="ident">sqrt</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">the_loop</span> <span class="op">=</span> <span class="ident">Loop3D::new</span>();
-    <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
-    <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="ident">l</span>, <span class="number">0.</span>, <span class="number">0.</span>)).<span class="ident">unwrap</span>();
-    <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="ident">l</span>, <span class="number">0.</span>, <span class="ident">l</span> <span class="op">*</span> <span class="number">2.</span>)).<span class="ident">unwrap</span>();
-    <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>, <span class="ident">l</span> <span class="op">*</span> <span class="number">2.</span>)).<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">angle</span> <span class="op">=</span> <span class="ident">options</span>.<span class="ident">orientation</span>.<span class="ident">to_radians</span>();
+
+    <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="op">-</span><span class="ident">l</span> <span class="op">*</span> <span class="ident">angle</span>.<span class="ident">cos</span>(), <span class="op">-</span><span class="ident">l</span><span class="kw-2">*</span><span class="ident">angle</span>.<span class="ident">sin</span>(), <span class="number">0.</span>)).<span class="ident">unwrap</span>();
+    <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>( <span class="ident">l</span> <span class="op">*</span> <span class="ident">angle</span>.<span class="ident">cos</span>(),  <span class="ident">l</span> <span class="op">*</span> <span class="ident">angle</span>.<span class="ident">sin</span>(), <span class="number">0.</span>)).<span class="ident">unwrap</span>();
+    <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>( <span class="ident">l</span> <span class="op">*</span> <span class="ident">angle</span>.<span class="ident">cos</span>(),  <span class="ident">l</span> <span class="op">*</span> <span class="ident">angle</span>.<span class="ident">sin</span>(), <span class="ident">l</span> <span class="op">*</span> <span class="number">2.</span>)).<span class="ident">unwrap</span>();
+    <span class="ident">the_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="op">-</span><span class="ident">l</span> <span class="op">*</span> <span class="ident">angle</span>.<span class="ident">cos</span>(), <span class="op">-</span><span class="ident">l</span> <span class="op">*</span> <span class="ident">angle</span>.<span class="ident">sin</span>(), <span class="ident">l</span> <span class="op">*</span> <span class="number">2.</span>)).<span class="ident">unwrap</span>();
     <span class="ident">the_loop</span>.<span class="ident">close</span>().<span class="ident">unwrap</span>();
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">Polygon3D::new</span>(<span class="ident">the_loop</span>).<span class="ident">unwrap</span>();
 
     <span class="comment">// Window... if there is any</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">window_polygon</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Polygon3D</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-    <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">window_area</span> <span class="op">&gt;</span> <span class="number">0.0</span> {
-        <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">window_area</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">surface_area</span> {
-            <span class="macro">panic!</span>(<span class="string">&quot;Win_area &gt;= Surface_area&quot;</span>)
-        }
+    <span class="kw">if</span> <span class="ident">options</span>.<span class="ident">window_area</span> <span class="op">&gt;</span> <span class="number">0.0</span> {                
+        <span class="macro">assert!</span>(<span class="ident">options</span>.<span class="ident">window_area</span> <span class="op">&lt;</span> <span class="ident">surface_area</span>, <span class="string">&quot;Win_area &gt;= Surface_area&quot;</span>);
+        
         <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> (<span class="ident">options</span>.<span class="ident">window_area</span> <span class="op">/</span> <span class="number">4.</span>).<span class="ident">sqrt</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">the_inner_loop</span> <span class="op">=</span> <span class="ident">Loop3D::new</span>();
         <span class="ident">the_inner_loop</span>.<span class="ident">push</span>(<span class="ident">Point3D::new</span>(<span class="op">-</span><span class="ident">l</span>, <span class="number">0.</span>, <span class="ident">l</span> <span class="op">/</span> <span class="number">2.</span>)).<span class="ident">unwrap</span>();
@@ -709,5 +763,5 @@ SOFTWARE.
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="simple_test_models" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (fdca237d5 2022-06-24)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="simple_test_models" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1c7b36d4d 2022-07-12)" ></div>
 </body></html>
