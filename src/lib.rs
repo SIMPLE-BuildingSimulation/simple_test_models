@@ -18,6 +18,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#![deny(missing_docs)]
+
+//! Functions for creating small SIMPLE models
+
 /// The kind of Floating point number used in the
 /// library... the `"float"` feature means it becomes `f32`
 /// and `f64` is used otherwise.
@@ -75,16 +79,37 @@ pub enum TestMat {
 
 }
 
+/// Characteristics of the Zone of the single-zone model
 pub struct SingleZoneTestBuildingOptions {
+    /// Volume, in m3
     pub zone_volume: Float,
+
+    /// The construction, built out of [`TestMat`]
     pub construction: Vec<TestMat>, // Explicitly mentioned
+    
+    /// The surface area... this will be a single wall
     pub surface_area: Float,
+
+    /// The window area, will be subtracted from the surface area
     pub window_area: Float,
+
+    /// The power of the heating in the zone, in W
     pub heating_power: Float,
+
+    /// The power of the lighting in the wall, in m3.
     pub lighting_power: Float,
+
+    /// The infiltration rate, in m3/s
     pub infiltration_rate: Float,
+
+    /// The emmisivity of the substances (assigned to all)
     pub emmisivity: Float,
+
+    /// The solar absorbtance of the substances, assigned to all
     pub solar_absorbtance: Float,
+
+    /// In degrees. When 0, the exterior points South
+    pub orientation: Float,
 }
 
 impl Default for SingleZoneTestBuildingOptions {
@@ -99,10 +124,12 @@ impl Default for SingleZoneTestBuildingOptions {
             infiltration_rate: 0.,
             emmisivity: 0.84,
             solar_absorbtance: 0.7,
+            orientation: 0.0,
         }
     }
 }
 
+/// Adds a luminare to the model
 pub fn add_luminaire(
     model: &mut SimpleModel,
     options: &SingleZoneTestBuildingOptions,
@@ -116,6 +143,7 @@ pub fn add_luminaire(
     model.add_luminaire(luminaire, header);
 }
 
+/// Adds a heater to the model
 pub fn add_heater(
     model: &mut SimpleModel,
     options: &SingleZoneTestBuildingOptions,
@@ -142,9 +170,8 @@ pub fn get_single_zone_test_building(
     /* ADD THE SPACE */
     /*************** */
     let zone_volume = options.zone_volume;
-    if zone_volume <= 0.0 {
-        panic!("A positive zone_volume parameter is required (Float)");
-    }
+    assert!(zone_volume > 0.0, "A positive zone_volume parameter is required (Float)");
+    
 
     let mut space = Space::new("Some space".to_string());
     space.set_volume(zone_volume);
@@ -235,26 +262,26 @@ pub fn get_single_zone_test_building(
     /****************** */
     // Wall
     let surface_area = options.surface_area;
-    if surface_area <= 0.0 {
-        panic!("A positive surface_area option is needed (Float)");
-    }
+    assert!(surface_area > 0.0, "A positive surface_area option is needed (Float)");
+    
 
     let l = (surface_area / 4.).sqrt();
     let mut the_loop = Loop3D::new();
-    the_loop.push(Point3D::new(-l, 0., 0.)).unwrap();
-    the_loop.push(Point3D::new(l, 0., 0.)).unwrap();
-    the_loop.push(Point3D::new(l, 0., l * 2.)).unwrap();
-    the_loop.push(Point3D::new(-l, 0., l * 2.)).unwrap();
+    let angle = options.orientation.to_radians();
+
+    the_loop.push(Point3D::new(-l * angle.cos(), -l*angle.sin(), 0.)).unwrap();
+    the_loop.push(Point3D::new( l * angle.cos(),  l * angle.sin(), 0.)).unwrap();
+    the_loop.push(Point3D::new( l * angle.cos(),  l * angle.sin(), l * 2.)).unwrap();
+    the_loop.push(Point3D::new(-l * angle.cos(), -l * angle.sin(), l * 2.)).unwrap();
     the_loop.close().unwrap();
 
     let mut p = Polygon3D::new(the_loop).unwrap();
 
     // Window... if there is any
     let mut window_polygon: Option<Polygon3D> = None;
-    if options.window_area > 0.0 {
-        if options.window_area >= surface_area {
-            panic!("Win_area >= Surface_area")
-        }
+    if options.window_area > 0.0 {                
+        assert!(options.window_area < surface_area, "Win_area >= Surface_area");
+        
         let l = (options.window_area / 4.).sqrt();
         let mut the_inner_loop = Loop3D::new();
         the_inner_loop.push(Point3D::new(-l, 0., l / 2.)).unwrap();
