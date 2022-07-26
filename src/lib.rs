@@ -35,9 +35,10 @@ use geometry3d::{Loop3D, Point3D, Polygon3D};
 use std::rc::Rc;
 
 use simple_model::{
-    hvac::ElectricHeater, substance::{Normal as NormalSubstance, Gas, gas::StandardGas}, Boundary, Construction,
-    Fenestration, FenestrationPositions, FenestrationType, Infiltration, Luminaire, Material,
-    SimpleModel, SimulationStateHeader, Space, Surface,
+    hvac::ElectricHeater,
+    substance::{gas::StandardGas, Gas, Normal as NormalSubstance},
+    Boundary, Construction, Fenestration, FenestrationPositions, FenestrationType, Infiltration,
+    Luminaire, Material, SimpleModel, SimulationStateHeader, Space, Surface,
 };
 
 /// The test material
@@ -70,13 +71,7 @@ pub enum TestMat {
     Glass(Float, Float),
 
     /// Air Cavity
-    Air(Float)
-
-    
-
-
-
-
+    Air(Float),
 }
 
 /// Characteristics of the Zone of the single-zone model
@@ -86,12 +81,18 @@ pub struct SingleZoneTestBuildingOptions {
 
     /// The construction, built out of [`TestMat`]
     pub construction: Vec<TestMat>, // Explicitly mentioned
-    
-    /// The surface area... this will be a single wall
-    pub surface_area: Float,
+
+    /// The surface width
+    pub surface_width: Float,
+
+    /// The surface height
+    pub surface_height: Float,
 
     /// The window area, will be subtracted from the surface area
-    pub window_area: Float,
+    pub window_width: Float,
+
+    /// The window height
+    pub window_height: Float,
 
     /// The power of the heating in the zone, in W
     pub heating_power: Float,
@@ -117,8 +118,10 @@ impl Default for SingleZoneTestBuildingOptions {
         SingleZoneTestBuildingOptions {
             zone_volume: -1., // Will be checked... negative numbers panic
             construction: Vec::with_capacity(0),
-            surface_area: -1., // Will be checked... negative numbers panic
-            window_area: 0.,
+            surface_width: -1.,  // Will be checked... negative numbers panic
+            surface_height: -1., // Will be checked... negative numbers panic
+            window_width: 0.,
+            window_height: 0.,
             heating_power: 0.,
             lighting_power: 0.,
             infiltration_rate: 0.,
@@ -170,8 +173,10 @@ pub fn get_single_zone_test_building(
     /* ADD THE SPACE */
     /*************** */
     let zone_volume = options.zone_volume;
-    assert!(zone_volume > 0.0, "A positive zone_volume parameter is required (Float)");
-    
+    assert!(
+        zone_volume > 0.0,
+        "A positive zone_volume parameter is required (Float)"
+    );
 
     let mut space = Space::new("Some space".to_string());
     space.set_volume(zone_volume);
@@ -218,7 +223,7 @@ pub fn get_single_zone_test_building(
     let polyurethane = model.add_substance(polyurethane.wrap());
 
     let mut air = Gas::new("some_gas".to_string());
-        air.set_gas(StandardGas::Air);
+    air.set_gas(StandardGas::Air);
     let air = model.add_substance(air.wrap());
 
     /*********************************** */
@@ -229,10 +234,10 @@ pub fn get_single_zone_test_building(
         let material = match c {
             TestMat::Concrete(thickness) => {
                 Material::new(format!("Material {}", i), concrete.clone(), *thickness)
-            },
+            }
             TestMat::Polyurethane(thickness) => {
                 Material::new(format!("Material {}", i), polyurethane.clone(), *thickness)
-            },
+            }
             TestMat::Glass(thickness, solar_transmittance) => {
                 let mut glass = NormalSubstance::new("polyurethane".to_string());
                 glass
@@ -246,11 +251,10 @@ pub fn get_single_zone_test_building(
                     .set_solar_transmittance(*solar_transmittance);
                 let glass = model.add_substance(glass.wrap());
                 Material::new(format!("Material {}", i), glass, *thickness)
-            },
-            TestMat::Air(thickness)=>{
+            }
+            TestMat::Air(thickness) => {
                 Material::new(format!("Material {}", i), air.clone(), *thickness)
             }
-
         };
         let material = model.add_material(material);
         construction.materials.push(material);
@@ -261,36 +265,65 @@ pub fn get_single_zone_test_building(
     /* SURFACE GEOMETRY */
     /****************** */
     // Wall
-    let surface_area = options.surface_area;
-    assert!(surface_area > 0.0, "A positive surface_area option is needed (Float)");
-    
+    assert!(
+        options.surface_width > 0.0 && options.surface_height > 0.0,
+        "A positive surface_area option is needed (Float)"
+    );
 
-    let l = (surface_area / 4.).sqrt();
+    let l = options.surface_width / 2.;
     let mut the_loop = Loop3D::new();
     let angle = options.orientation.to_radians();
 
-    the_loop.push(Point3D::new(-l * angle.cos(), -l*angle.sin(), 0.)).unwrap();
-    the_loop.push(Point3D::new( l * angle.cos(),  l * angle.sin(), 0.)).unwrap();
-    the_loop.push(Point3D::new( l * angle.cos(),  l * angle.sin(), l * 2.)).unwrap();
-    the_loop.push(Point3D::new(-l * angle.cos(), -l * angle.sin(), l * 2.)).unwrap();
+    the_loop
+        .push(Point3D::new(-l * angle.cos(), -l * angle.sin(), 0.))
+        .unwrap();
+    the_loop
+        .push(Point3D::new(l * angle.cos(), l * angle.sin(), 0.))
+        .unwrap();
+    the_loop
+        .push(Point3D::new(
+            l * angle.cos(),
+            l * angle.sin(),
+            options.surface_height,
+        ))
+        .unwrap();
+    the_loop
+        .push(Point3D::new(
+            -l * angle.cos(),
+            -l * angle.sin(),
+            options.surface_height,
+        ))
+        .unwrap();
     the_loop.close().unwrap();
 
     let mut p = Polygon3D::new(the_loop).unwrap();
 
     // Window... if there is any
     let mut window_polygon: Option<Polygon3D> = None;
-    if options.window_area > 0.0 {                
-        assert!(options.window_area < surface_area, "Win_area >= Surface_area");
-        
-        let l = (options.window_area / 4.).sqrt();
+    if options.window_width > 0.0 && options.window_height > 0.0 {
+        assert!(
+            options.window_width * options.window_height
+                < options.surface_width * options.surface_height,
+            "Win_area >= Surface_area"
+        );
+
+        let l = options.window_width / 2.;
         let mut the_inner_loop = Loop3D::new();
-        the_inner_loop.push(Point3D::new(-l, 0., l / 2.)).unwrap();
-        the_inner_loop.push(Point3D::new(l, 0., l / 2.)).unwrap();
         the_inner_loop
-            .push(Point3D::new(l, 0., 3. * l / 2.))
+            .push(Point3D::new(-l * angle.cos(), -l * angle.sin(), options.surface_height/2. - options.window_height/2.))
             .unwrap();
         the_inner_loop
-            .push(Point3D::new(-l, 0., 3. * l / 2.))
+            .push(Point3D::new(l * angle.cos(), l * angle.sin(), options.surface_height/2. - options.window_height/2.))
+            .unwrap();
+        the_inner_loop
+            .push(Point3D::new(l * angle.cos(), l * angle.sin(), options.surface_height/2. + options.window_height/2.))
+            .unwrap();
+        the_inner_loop
+            .push(Point3D::new(
+                -l * angle.cos(),
+                -l * angle.sin(),
+                options.surface_height/2. + options.window_height/2.,
+            ))
             .unwrap();
         the_inner_loop.close().unwrap();
         p.cut_hole(the_inner_loop.clone()).unwrap();
@@ -344,19 +377,53 @@ mod testing {
 
     #[test]
     fn test_with_window() {
-        let surface_area = 4.;
-        let window_area = 1.;
+        let surface_width = 2.;
+        let surface_height = 2.;
+        let window_width = 1.;
+        let window_height = 1.;
         let zone_volume = 40.;
 
-        let (_simple_model, _state_header) = get_single_zone_test_building(
+        let (simple_model, _state_header) = get_single_zone_test_building(
             // &mut state,
             &SingleZoneTestBuildingOptions {
                 zone_volume,
-                surface_area,
-                window_area,
+                surface_height,
+                surface_width,
+                window_height,
+                window_width,
                 construction: vec![TestMat::Concrete(0.2)],
                 ..Default::default()
             },
         );
+
+        let surf_area = simple_model.surfaces[0].area();
+        let exp_area = surface_width * surface_height - window_height*window_width;
+        assert!( (surf_area - exp_area).abs() < 1e-3 , "area = {}... expecting {}", surf_area, exp_area);
+    }
+
+    #[test]
+    fn test_no_window() {
+        let surface_width = 2.;
+        let surface_height = 2.;
+        let window_width = 0.;
+        let window_height = 0.;
+        let zone_volume = 40.;
+
+        let (simple_model, _state_header) = get_single_zone_test_building(
+            // &mut state,
+            &SingleZoneTestBuildingOptions {
+                zone_volume,
+                surface_height,
+                surface_width,
+                window_height,
+                window_width,
+                construction: vec![TestMat::Concrete(0.2)],
+                ..Default::default()
+            },
+        );
+
+        let surf_area = simple_model.surfaces[0].area();
+        let exp_area = surface_width * surface_height;
+        assert!( (surf_area - exp_area).abs() < 1e-3 , "area = {}... expecting {}", surf_area, exp_area);
     }
 }
