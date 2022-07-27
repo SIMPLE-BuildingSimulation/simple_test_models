@@ -335,7 +335,7 @@ pub fn get_single_zone_test_building(
     /***************** */
     // Add surface
     let mut surface = Surface::new("Surface".to_string(), p, Rc::clone(&construction));
-    surface.set_front_boundary(Boundary::Space(Rc::clone(&space)));
+    surface.set_back_boundary(Boundary::Space(Rc::clone(&space)));
     model.add_surface(surface);
 
     // Add window.
